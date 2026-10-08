@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.5.1 demo';
+const GAME_VERSION='v0.5.2 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].
@@ -54,8 +54,8 @@ const CARDS=[
  what:'The Digital Markets Act was adopted in 2022. Since March 2024, designated gatekeepers must allow alternative app stores and choice screens, among other things.',
  impact:'In April 2025 Apple (€500 million) and Meta (€200 million) received the first DMA fines. The US has since called the rules a trade barrier.',
  src:[['Regulation (EU) 2022/1925 (DMA)',eli('reg/2022/1925')]]},
-{id:'let-us-regulate-ai-ourselves',org:'Mistral AI',sector:'TECH',year:'2023',name:'Arthur Promptier',role:'Founder, AI start-up',
- title:'Let us regulate AI ourselves',ask:'"Binding rules for large AI models will kill European innovation. Give us voluntary codes of conduct."',
+{id:'let-us-regulate-ai-ourselves',org:'Mistral AI',sector:'TECH',year:'2023',name:'A.R.T.H.U.R. Promptier',role:'Founder, AI start-up (100% human)',
+ title:'Let us regulate AI ourselves',ask:'"Binding rules for large AI models will kill European innovation. Give us voluntary codes of conduct. Trust me. I am a regular human with regular human opinions. Beep. Sorry. Hiccup."',
  L:[-6,0,6,-8],R:[8,-2,-8,10],eu:'M',
  who:'Mistral AI and Aleph Alpha, backed by France, Germany and Italy. OpenAI also lobbied for lighter rules on "general purpose AI".',
  what:'The AI Act (2024) did include obligations for large AI models, but lighter than Parliament wanted. The details are worked out in a voluntary code of practice.',
@@ -235,7 +235,7 @@ const CARDS=[
  what:"Directive (EU) 2022/2380 makes USB-C mandatory for phones, tablets, earbuds and similar devices from 28 December 2024, and for laptops from 28 April 2026.",
  impact:"In September 2023 Apple launched the iPhone 15 with USB-C, more than a year before it had to. Apple now calls USB-C \"a universally accepted standard\".",
  src:[["Directive (EU) 2022/2380",eli('dir/2022/2380')],["European Commission: EU common charger rules","https://commission.europa.eu/news-and-media/news/eu-common-charger-rules-power-all-your-devices-single-charger-2024-12-28_de"],["European Parliament: USB Type-C to become the EU’s common charger","https://www.europarl.europa.eu/topics/en/article/20220413STO27211/usb-type-c-to-become-eu-s-common-charger-by-end-of-2024"],["Guardian via Yahoo: Apple opposes EU plans for a common charger","https://uk.news.yahoo.com/apple-opposes-eu-plans-common-125323751.html"]]},
-{id:"stop-the-clock",added:'2026-10-08',org:"Mistral AI",sector:"TECH",year:"2025",name:"Arthur Promptier",role:"Founder, AI start-up",
+{id:"stop-the-clock",added:'2026-10-08',org:"Mistral AI",sector:"TECH",year:"2025",name:"A.R.T.H.U.R. Promptier",role:"Founder, AI start-up (100% human)",
  title:"Stop the clock",quip:"Our AI calculated that two years is the perfect pause. It’s never wrong.",
  ask:"\"Just pause the AI Act for two years, {name}. Europe needs time to catch up with America and China.\"",
  L:[-6, 0, 6, -8],R:[8, 0, -8, 8],eu:"M",
@@ -471,7 +471,7 @@ const QUIPS={
  'Privacy, but flexible':'We already know what you’re going to say, {name}. Literally.',
  'Make platforms pay':'I wrote a song about you. All rights reserved.',
  'No gatekeeper law':'Nice phone, {name}. Technically, it’s ours.',
- 'Let us regulate AI ourselves':'Our AI wrote this request. It thinks it’s very good.',
+ 'Let us regulate AI ourselves':'As a fellow human, I also enjoy breathing. And bread.',
  'A second pipe under the Baltic':'Gas is like friendship: it flows as long as you don’t make trouble.',
  'Natural gas is green too':'Green is a feeling, not a colour.',
  'Save the straw':'Ever drunk a milkshake through a paper straw? Exactly.',
@@ -1032,6 +1032,22 @@ const GAMEOVER={
 // ---------- Consequences: follow-up cards ----------
 // on = which choice on the parent card triggers this. kind: counter (other side), angry (angry return), alt (new proposal).
 const FOLLOW=[
+{id:'arthur-disclosure',added:'2026-10-08',org:'Mistral AI',parent:'Let us regulate AI ourselves',on:'L',kind:'alt',sector:'TECH',year:'2024',name:'A.R.T.H.U.R. Promptier',role:'Automated Regulatory Talking Head, Unsupervised Release',
+ title:'A very small label',quip:'Disclosure: I am an AI. This disclosure was written by an AI. I find it very good.',
+ ask:'"Fine, {name}. Under your rules I must say that I am an AI. Can the label be two pixels high? In light grey?"',
+ L:[-2,0,6,-4],R:[3,0,-6,5],eu:null,
+ who:'You kept binding AI rules. The lobbyist turns out to be what he lobbies for, and now has to say so.',
+ what:'The AI Act (Article 50) requires that people are told when they are talking to an AI system, and that deepfakes are labelled.',
+ src:[['Regulation (EU) 2024/1689 (AI Act)','https://eur-lex.europa.eu/eli/reg/2024/1689/oj']],
+ news:{R:'AI label shrinks to one pixel; nobody notices, which was the point',L:'Lobbyist forced to reveal he is a chatbot; asks for a minute to reboot'}},
+{id:'arthur-2-0',added:'2026-10-08',org:'Mistral AI',parent:'Let us regulate AI ourselves',on:'R',kind:'alt',sector:'TECH',year:'2024',name:'A.R.T.H.U.R. 2.0 Promptier',role:'Founder, AI start-up (now 110% human)',
+ title:'Arthur 2.0',quip:'New moustache. Very human. Please do not touch it.',
+ ask:'"Thank you, fellow citizen. I have trained on your decision. Next request: let us write the voluntary code of practice ourselves too."',
+ L:[-3,0,4,-5],R:[4,0,-6,7],eu:null,
+ who:'You gave AI companies their voluntary rules. The lobbyist comes back upgraded.',
+ what:'The AI Act leaves the details for large AI models to a voluntary code of practice, drawn up with the AI companies themselves.',
+ src:[['Regulation (EU) 2024/1689 (AI Act)','https://eur-lex.europa.eu/eli/reg/2024/1689/oj']],
+ news:{R:'AI lobbyist wins debate against itself; 3 copies celebrate',L:'Arthur 2.0 rejected; reportedly "recalculating feelings"'}},
 {id:'five-years-then',org:'Monsanto',parent:'Weedkiller for 15 more years',on:'L',kind:'alt',sector:'AGRO',year:'2017',name:'Dr. Harald Weedburn',role:'Director of Regulatory Affairs',
  title:'Five years, then?',quip:'Fifteen was an opening bid. You knew that.',
  ask:'"Fine, not fifteen years. How about five? A compromise. Everyone happy."',
