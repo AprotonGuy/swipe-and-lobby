@@ -414,7 +414,12 @@ body.lockL #btnL,body.lockR #btnR{opacity:.35;text-decoration:line-through}
 .night .pickbar button{appearance:none;border:1.5px solid #c9a24a;background:transparent;color:#eadfd4;border-radius:8px;padding:12px 8px;font:700 14px/1.2 var(--f-body);cursor:pointer}
 .night .pickbar button:hover{background:rgba(201,162,74,.15)}
 .promise-tag.pact{background:#5a3a4e}
-.promise-tag.trial{background:#2f7a35}
+.promise-tag.trial{background:#2f7a35}.promise-tag.newc{background:#b8860b}
+.unl-pop{z-index:5}.unl-pop .modal{text-align:center;animation:upIn .45s cubic-bezier(.2,1.4,.4,1)}.up-burst{font-size:44px;line-height:1;margin-bottom:4px;animation:upSpin 1.2s ease-out}.up-list{list-style:none;padding:0;margin:10px 0 14px;display:grid;gap:6px;text-align:left}.up-list li{padding:7px 9px;border:1px dashed currentColor;border-radius:4px;font-weight:600}
+@keyframes upIn{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}@keyframes upSpin{from{transform:rotate(-30deg) scale(.4)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.unl-pop .modal,.up-burst{animation:none}}
+.unl-new{font:600 12px/1.4 var(--f-mono);letter-spacing:.04em;margin:6px 0 10px;padding:6px 8px;border:1px dashed currentColor;border-radius:4px;opacity:.85}
+.ul-list{display:grid;gap:6px;margin:10px 0}.ul-row{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;border:1px solid rgba(0,0,0,.15);border-radius:4px;opacity:.6}.ul-row.ok{opacity:1}.ul-row .ul-i{font-size:20px;line-height:1.2}.ul-row b{display:block}.ul-row small{display:block;font-size:12px;opacity:.8}
 .day-sum{display:flex;flex-wrap:wrap;gap:6px 12px;font:500 13px/1 var(--f-mono);font-variant-numeric:tabular-nums;margin:8px 0}
 .day-sum .p{color:#3d6b65}.day-sum .n{color:#a63a44}
 .paper-news .modal{text-align:left}
@@ -623,14 +628,28 @@ FOLLOW.forEach(f=>{f.follow=true;CARDS.push(f)});
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function start(){
   S={eco:50,clim:50,trust:50,corp:50};
-  deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual)); {const isC=k=>COUNTER_SECTORS.includes(CARDS[k].sector);const co=deck.filter(isC).slice(0,COUNTER_PER_GAME),bz=deck.filter(k=>!isC(k)).slice(0,DOSSIERS_PER_GAME-Math.min(COUNTER_PER_GAME,deck.filter(isC).length));deck=shuffle(co.concat(bz));} {const n=PER_DAY*(UNLOCK.compromise-1);for(let i=0;i<n&&i<deck.length;i++){if(CARDS[deck[i]].eu==='M'){const j=deck.findIndex((k,x)=>x>=n&&CARDS[k].eu!=='M');if(j>-1)[deck[i],deck[j]]=[deck[j],deck[i]];}}} idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
+  const T0=nextTerm();deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual&&termOf(CARDS[i].id)<=T0)); if(T0<90)deck.sort((a,b)=>(termOf(CARDS[b].id)===T0)-(termOf(CARDS[a].id)===T0)); {const isC=k=>COUNTER_SECTORS.includes(CARDS[k].sector);const co=deck.filter(isC).slice(0,COUNTER_PER_GAME),bz=deck.filter(k=>!isC(k)).slice(0,DOSSIERS_PER_GAME-Math.min(COUNTER_PER_GAME,deck.filter(isC).length));deck=shuffle(co.concat(bz));} {const n=PER_DAY*(UNLOCK_BASE.compromise-1);for(let i=0;i<n&&i<deck.length;i++){if(CARDS[deck[i]].eu==='M'){const j=deck.findIndex((k,x)=>x>=n&&CARDS[k].eu!=='M');if(j>-1)[deck[i],deck[j]]=[deck[j],deck[i]];}}} idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); PX.term=T0; spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
   {PX.body=[];if(bodyName()){const seen=new Set();shuffle(deck.slice(2)).forEach(k=>{const c=CARDS[k];if(PX.body.length<BODY_VISITS&&!c.char&&!seen.has(c.sector)){seen.add(c.sector);PX.body.push(c.id);}});}}
   renderStats(); stage.innerHTML=''; $('.rcwrap').hidden=true; if(typeof updateSecTab==='function'){closeSecrets();updateSecTab();} title();
 }
 // ---------- Settings (per device) ----------
-const PREF={music:true,sfx:true,font:'classic',tips:true};
+const PREF={music:true,sfx:true,font:'classic',tips:true,unlockAll:false};
+const UNLOCK_BASE={...UNLOCK};Object.keys(UNLOCK_BASE).forEach(k=>Object.defineProperty(UNLOCK,k,{get:()=>feat(k)?UNLOCK_BASE[k]:999,configurable:true}));
 try{Object.assign(PREF,JSON.parse(localStorage.getItem('swl-prefs')||'{}'));}catch(e){}
 const savePref=()=>{try{localStorage.setItem('swl-prefs',JSON.stringify(PREF));}catch(e){}};
+// ---------- Unlocks across games (terms) ----------
+let META={};try{META=JSON.parse(localStorage.getItem('swl-meta')||'{}')||{};}catch(e){}
+const saveMeta=()=>{try{localStorage.setItem('swl-meta',JSON.stringify(META));}catch(e){}};
+const HAS_PROG=typeof PROGRESSION!=='undefined';
+const nextTerm=()=>PREF.unlockAll||!HAS_PROG?99:(META.played||0)+1;
+const curTermNo=()=>(typeof PX==='object'&&PX&&PX.term)||nextTerm();
+const feat=k=>!HAS_PROG||curTermNo()>=(PROGRESSION.features[k]||1);
+const secUnlocked=()=>!HAS_PROG||PREF.unlockAll||(META.terms||0)>=1;
+const termOf=id=>{if(!HAS_PROG)return 1;if(PROGRESSION.starter.includes(id))return 1;for(const t in PROGRESSION.waves)if(PROGRESSION.waves[t].includes(id))return +t;return PROGRESSION.allFrom;};
+const isNewDossier=c=>HAS_PROG&&!PREF.unlockAll&&!!c&&!c.follow&&curTermNo()>1&&curTermNo()<90&&termOf(c.id)===curTermNo();
+function metaEnd(won){if(!PX||PX.metaDone||!HAS_PROG)return;PX.metaDone=1;META.played=(META.played||0)+1;if(won)META.terms=(META.terms||0)+1;saveMeta();}
+function unlockNews(t){if(!HAS_PROG||t<2||t>=90)return null;const f=PROGRESSION.ladder.filter(x=>x.term===t);const n=CARDS.filter(c=>!c.follow&&!c.react&&!c.crisis&&!c.quest&&!c.ritual&&termOf(c.id)===t).length;
+  if(!f.length&&!n)return null;return {f,n};}
 const FONTS={
  classic:{label:'Classic',desc:'Clean office print',display:'"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif',body:'"IBM Plex Sans", system-ui, sans-serif'},
  type:{label:'Typewriter',desc:'Like a dusty Brussels memo',display:'"Courier Prime", "Courier New", monospace',body:'"Courier Prime", "Courier New", monospace'},
@@ -725,14 +744,18 @@ const SND=(()=>{
     knock(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[0,.18].forEach(d=>{tone(160,t+d,.12,'sine',.8,sfxGain);noise(t+d,.05,.4,900,300,'lowpass');});},
     chime(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[659,880,1046].forEach((f,i)=>tone(f,t+i*.09,.6,'sine',.12,sfxGain));},
     fired(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[392,370,349,294].forEach((f,i)=>tone(f,t+i*.32,i===3?1.1:.35,'triangle',.25,sfxGain));},
-    win(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[523,659,784,1046].forEach((f,i)=>tone(f,t+i*.12,.5,'triangle',.2,sfxGain));}
+    win(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[523,659,784,1046].forEach((f,i)=>tone(f,t+i*.12,.5,'triangle',.2,sfxGain));},
+    // happy little fanfare for new unlocks; returns false if audio isn't running yet
+    tada(){if(!ctx||!PREF.sfx||ctx.state!=='running')return false;const t=ctx.currentTime;
+      [[523,0,.14],[659,.14,.14],[784,.28,.14],[1046,.42,.32],[784,.78,.12],[1046,.92,.6]].forEach(([f,d,l])=>{tone(f,t+d,l+.1,'square',.07,sfxGain);tone(f/2,t+d,l+.1,'triangle',.12,sfxGain);});
+      [1318,1568].forEach((f,i)=>tone(f,t+1.0+i*.08,.5,'sine',.06,sfxGain));return true;}
   };
 })();
 
 // ---------- Title screen, settings, info (own overlay, so they never disturb a running game) ----------
 const ovl=document.getElementById('ovl');
 const closeOvl=()=>{ovl.innerHTML='';};
-function beginNew(){if(GERARD_ALWAYS){SEEN.clear();PREF.tips=true;}SND.knock();closeOvl();intro();}
+function beginNew(){if(!inGame&&PX&&PX.term!==nextTerm())start();if(GERARD_ALWAYS){SEEN.clear();PREF.tips=true;}SND.knock();closeOvl();intro();}
 // ---------- Save & continue (per device) ----------
 const SAVE_KEY='swl-save';
 function hasSave(){try{const x=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');return !!(x&&x.cardsLen===CARDS.length);}catch(e){return false;}}
@@ -753,7 +776,7 @@ function title(){
     <h1 id="t-h">Swipe <span>&amp;</span> Lobby</h1>
     <p class="tag">Four lobbyists a day. Four bars to keep in balance. One very nervous Commissioner: you.</p>
     <div class="menu">${inGame||hasSave()?`<button class="primary" id="t-cont" type="button">Continue${inGame?'':` · day ${savedDay()}`}</button><button id="t-restart" type="button">Restart game</button>`:'<button class="primary" id="t-start" type="button">Start</button>'}
-      <button id="t-how" type="button">How to play</button>
+      <button id="t-how" type="button">How to play</button><button id="t-unl" type="button">🔓 Unlocks</button>
       <button id="t-set" type="button">Settings</button><button id="t-info" type="button">Info &amp; sources</button></div>
     ${window.CAN_EDIT?'<span class="t-edits"><a id="t-edit" class="t-edit" href="regiekamer.html">✎ Regiekamer (texts)</a> · <a class="t-edit" href="https://claude.ai/artifact/U9ZbpujtoFfqwjNU848f22" target="_blank" rel="noopener">🎨 Art Studio</a><br><small>only you see this</small></span>':''}
     <div class="credit">Made by Wesley vanroose · satire based on real EU dossiers<br><span class="ver">${typeof GAME_VERSION!=='undefined'?GAME_VERSION:''}</span></div></div></div>`;
@@ -762,9 +785,26 @@ function title(){
   if($('#t-restart'))$('#t-restart').onclick=e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure='1';b.textContent='Sure? Your progress is lost. Tap again';return;}
     SND.unlock();clearSave();SEEN.clear();saveSeen();PREF.tips=true;savePref();start();beginNew();};
   $('#t-how').onclick=()=>{SND.unlock();howTo(title);};
+  $('#t-unl').onclick=()=>{SND.unlock();unlocksView(title);};
   $('#t-set').onclick=()=>{SND.unlock();settings(title);};
   $('#t-info').onclick=()=>{SND.unlock();info(title);};
   ($('#t-cont')||$('#t-start')).focus({preventScroll:true});
+  unlockPopup();
+}
+// Back on the title screen after a game: celebrate whatever just became available.
+function unlockPopup(){
+  if(!HAS_PROG||PREF.unlockAll||inGame)return;const t=nextTerm(),items=[];
+  if((META.seen||1)<t){for(let k=(META.seen||1)+1;k<=t;k++){const u=unlockNews(k);if(u){u.f.forEach(x=>items.push(x.ico+' '+x.name));if(u.n)items.push(`🗂️ ${u.n} new dossiers`);}}}
+  const sec=secUnlocked()&&!META.seenSec;if(sec){const x=PROGRESSION.ladder.find(l=>l.terms);if(x)items.push(x.ico+' '+x.name);}
+  if(!items.length)return;
+  ovl.insertAdjacentHTML('beforeend',`<div class="veil letter unl-pop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="up-h">
+    <div class="up-burst" aria-hidden="true">🎉</div><div class="kicker">Term ${t} · something new</div>
+    <h3 id="up-h">Congratulations, you unlocked something new!</h3>
+    <ul class="up-list">${items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    <button class="next" id="up-ok" type="button">OK</button></div></div>`);
+  const played=SND.tada&&SND.tada();
+  $('#up-ok').focus({preventScroll:true});
+  $('#up-ok').onclick=()=>{SND.unlock&&SND.unlock();if(!played)setTimeout(()=>SND.tada&&SND.tada(),60);META.seen=t;if(sec)META.seenSec=true;saveMeta();const el=ovl.querySelector('.unl-pop');if(el)el.remove();($('#t-cont')||$('#t-start')).focus({preventScroll:true});};
 }
 const HOWTO=[
  {ico:'🗂️',h:'Your job',t:`<p>You are the new EU Commissioner. Every day <b>four lobbyists</b> visit you with a real EU dossier.</p>
@@ -832,17 +872,32 @@ function settings(back){
     ${tog('s-music',PREF.music,'Music','A smug little lobby lounge tune')}
     ${tog('s-sfx',PREF.sfx,'Sound effects','Stamps, paper, typewriter, door knocks')}
     ${tog('s-tips',PREF.tips,'Tips from '+escH(GHOST),'The ghost of your predecessor explains things the first time')}
+    ${tog('s-unl',!!PREF.unlockAll,'Unlock everything','For testing: every system and dossier from the start of your next game')}
     <div class="fonts" role="radiogroup" aria-label="Font"><b style="font:600 15px var(--f-body)">Font</b>
       ${Object.entries(FONTS).map(([k,f])=>`<button class="fontopt" role="radio" type="button" data-font="${k}" aria-checked="${PREF.font===k}" style="font-family:${f.body.replace(/"/g,"'")}"><b style="font-family:${f.display.replace(/"/g,"'")}">${f.label}</b><span>${f.desc}</span></button>`).join('')}</div>
     <button class="erase" id="s-erase" type="button">Erase all game data</button>
     <button class="next" id="s-back" type="button">${back===title?'Back':'Back to the game'}</button></div></div>`;
   $('#s-music').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);SND.setMusic(on);};
   $('#s-sfx').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);SND.setSfx(on);if(on)SND.stamp(true);};
+  $('#s-unl').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);PREF.unlockAll=on;savePref();};
   $('#s-tips').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);PREF.tips=on;savePref();if(on){SEEN.clear();saveSeen();}};
   ovl.querySelectorAll('.fontopt').forEach(b=>b.onclick=()=>{PREF.font=b.dataset.font;savePref();applyFont();ovl.querySelectorAll('.fontopt').forEach(x=>x.setAttribute('aria-checked',x===b));});
   $('#s-erase').onclick=e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure='1';b.textContent='Sure? Everything is wiped, even the ghost. Tap again';return;}
     try{Object.keys(localStorage).filter(k=>k.startsWith('swl-')).forEach(k=>localStorage.removeItem(k));}catch(e){}location.reload();};
   $('#s-back').onclick=()=>back?back():closeOvl();$('#s-back').focus({preventScroll:true});
+}
+function unlocksView(back){
+  const P=PROGRESSION,played=META.played||0,next=nextTerm(),all=next>=90;
+  const pool=CARDS.filter(c=>!c.follow&&!c.react&&!c.crisis&&!c.quest&&!c.ritual),have=pool.filter(c=>termOf(c.id)<=next).length;
+  const row=(ok,ico,name,sub)=>`<div class="ul-row${ok?' ok':''}"><span class="ul-i">${ok?ico:'🔒'}</span><span><b>${ok?name:(sub.startsWith('Unlocks')?name:'???')}</b><small>${ok?'Unlocked':sub}</small></span></div>`;
+  ovl.innerHTML=`<div class="veil letter info${back===title?' title-bg':''}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="u-h">
+    <div class="kicker">Unlocks</div><h3 id="u-h">The more terms you serve, the more of Brussels you see</h3>
+    <p class="small">${all?'Everything is unlocked (see Settings).':`Terms played: <b>${played}</b> · your next game is term <b>${next}</b> · terms completed: <b>${META.terms||0}</b>`}</p>
+    <div class="ul-list">${P.ladder.map(x=>x.term?row(next>=x.term,x.ico,x.name,next+1===x.term?'Unlocks in your next term':'Unlocks in term '+x.term):row(secUnlocked(),x.ico,x.name,x.hint)).join('')}
+      <div class="ul-row ok"><span class="ul-i">🗂️</span><span><b>Dossiers: ${have} of ${pool.length}</b><small>${have<pool.length?'More arrive next term':'All dossiers unlocked'}</small></span></div></div>
+    <p class="small">New dossiers arrive every term until term ${P.allFrom}. Progress is saved on this device.</p>
+    <button class="next" id="u-back" type="button">Back</button></div></div>`;
+  $('#u-back').onclick=()=>back?back():closeOvl();$('#u-back').focus({preventScroll:true});
 }
 function info(back){
   ovl.innerHTML=`<div class="veil letter info${back===title?' title-bg':''}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="i-h">
@@ -909,6 +964,7 @@ function intro(){
    <div class="kicker">European Commission · Letter of appointment</div>
    <h3 id="in-t">Welcome to Swipe &amp; Lobby, Commissioner</h3>
    <label class="pname">Sign here with your name<input id="pname" type="text" maxlength="20" autocomplete="nickname" placeholder="Your name" value="${escH(PLAYER)}"></label>
+   ${(()=>{const t=nextTerm();const u=unlockNews(t);return t>=90?'':`<div class="unl-new"><b>🗓️ Term ${t}</b>${u?` · 🔓 New: ${u.f.map(x=>x.ico+' '+x.name).join(', ')}${u.f.length&&u.n?' · ':''}${u.n?u.n+' new dossiers':''}`:t===1?' · play more terms to unlock more of Brussels':''}</div>`;})()}
    <p>You have been appointed <b>Commissioner for Lobby Affairs</b>. Your office is ready. Your desk is empty. It won’t stay that way.</p>
    <p class="sig">Yours sincerely,<br>The Secretariat-General (who also doesn’t know who nominated you. Sometimes we think this building is haunted.)</p>
    <p class="disc"><b>Please note:</b> Swipe &amp; Lobby is satire. The lobbyists, their lines and the newspaper headlines are made up. The reality checks are based on public sources. This game is not affiliated with or endorsed by any organisation it mentions.</p>
@@ -936,8 +992,8 @@ const mortgage=()=>owned.includes('villa')?hikes*MORTGAGE_PER_HIKE:0;
 const eur=k=>{k=Math.round(k*10)/10;return k>=1000?`€${(k/1000).toFixed(k%1000?1:0)}m`:`€${k}k`;};
 const heatWord=h=>h<20?'low':h<45?'rising':h<70?'high':'red-hot';
 function updatePurse(){
-  const el=$('#purse');if(!el)return;
-  el.innerHTML=`<span>💶 <b>${eur(money)}</b> ${day>=UNLOCK.inflation?`<span class="infl${infShown>=ECB_LIMIT-1?' hot':''}" title="Inflation (from tonight’s paper)">📈 ${infShown.toFixed(infShown%1?1:0)}%</span>`:''}${mortgage()?` <span class="infl hot" title="Mortgage per day">🏠 −${eur(mortgage())}/day</span>`:''}</span>${PX.dream&&typeof DREAMS!=='undefined'?`<span class="dchip${dreamProg().ok?' ok':''}" title="Your dream: ${DREAMS[PX.dream].name}">${DREAMS[PX.dream].ico} ${dreamProg().ok?'✓':dreamProg().txt.split(' (')[0].replace(/ of .*/,'').replace(/ yes to the lobby/,' yes').replace(/ nature choices/,'')}</span>`:''}<span class="own" aria-label="Your possessions">${owned.map(id=>SHOPMAP[id]?SHOPMAP[id].ico:'').join('')}</span><span class="heat">👀 Media: ${heatWord(heat)}<i style="--h:${Math.min(100,heat)}%"></i></span>`;
+  const el=$('#purse');if(!el)return;if(!feat('media'))heat=0;
+  el.innerHTML=`<span>💶 <b>${eur(money)}</b> ${day>=UNLOCK.inflation?`<span class="infl${infShown>=ECB_LIMIT-1?' hot':''}" title="Inflation (from tonight’s paper)">📈 ${infShown.toFixed(infShown%1?1:0)}%</span>`:''}${mortgage()?` <span class="infl hot" title="Mortgage per day">🏠 −${eur(mortgage())}/day</span>`:''}</span>${PX.dream&&typeof DREAMS!=='undefined'?`<span class="dchip${dreamProg().ok?' ok':''}" title="Your dream: ${DREAMS[PX.dream].name}">${DREAMS[PX.dream].ico} ${dreamProg().ok?'✓':dreamProg().txt.split(' (')[0].replace(/ of .*/,'').replace(/ yes to the lobby/,' yes').replace(/ nature choices/,'')}</span>`:''}<span class="own" aria-label="Your possessions">${owned.map(id=>SHOPMAP[id]?SHOPMAP[id].ico:'').join('')}</span>${feat('media')?`<span class="heat">👀 Media: ${heatWord(heat)}<i style="--h:${Math.min(100,heat)}%"></i></span>`:''}`;
 }
 function richWatch(){if(typeof SECRETS!=='undefined'&&SECRETS.island&&PX&&money<(SECRETS.island.minMoney||0))PX.richDay=null;}
 function updateStats(){
@@ -1171,7 +1227,7 @@ function gate(){
   if(PX.ghostPath&&day>=2&&PX.ritualNext<=4&&PX.ritualDay!==day&&deck.length-idx>1&&!deck.slice(idx).some(k=>CARDS[k].ritual)){const rk=CARDS.findIndex(c=>c.ritual===PX.ritualNext);
     if(rk>-1){PX.ritualDay=day;PX.ritualNext++;deck.splice(idx+Math.floor(Math.random()*Math.min(PER_DAY,deck.length-idx)),0,rk);}}
   // the Brotherhood's quiet request slips into today's agenda, looking like any other visitor
-  if(typeof QUEST_CHANCE!=='undefined'&&day>=SECRET_FROM&&!PX.questSeen&&deck.length-idx>2&&Math.random()<QUEST_CHANCE){const qk=CARDS.findIndex(c=>c.quest==='weed');
+  if(typeof QUEST_CHANCE!=='undefined'&&secUnlocked()&&day>=SECRET_FROM&&!PX.questSeen&&deck.length-idx>2&&Math.random()<QUEST_CHANCE){const qk=CARDS.findIndex(c=>c.quest==='weed');
     if(qk>-1){PX.questSeen=true;deck.splice(idx+1+Math.floor(Math.random()*Math.min(3,deck.length-idx-1)),0,qk);}}
   const n=Math.min(PER_DAY,deck.length-idx);
   let drift='';
@@ -1243,6 +1299,7 @@ function renderCards(deal){
   stage.appendChild(el);
   {const f=forced(),pr=f&&f.dir;el.classList.toggle('promisedR',pr==='R');el.classList.toggle('promisedL',pr==='L');el.classList.toggle('promisedM',pr==='M');document.body.classList.toggle('lockL',pr==='R'||pr==='M');document.body.classList.toggle('lockR',pr==='L'||pr==='M');
    if(f&&f.why!=='promise'){const t=FORCE_TAG[f.why];el.querySelector('.dossier').insertAdjacentHTML('beforeend',`<br><span class="promise-tag pact">${typeof t==='function'?t(f.dir):t}</span>`);}}
+  if(isNewDossier(c)){const d=el.querySelector('.dossier');if(d)d.insertAdjacentHTML('beforeend',`<br><span class="promise-tag newc">🔓 New dossier</span>`);}
   if(trialOn(c)){const d=el.querySelector('.dossier');if(d)d.insertAdjacentHTML('beforeend',`<br><span class="promise-tag trial">🌿 Brotherhood trial: choose nature${PX.trialBad?' · failed':''} · nature costs ×${TRIAL.cost}</span>`);}
   fillSheet(c);setSheet(false);bindDrag(el);busy=false;updatePacts();updateM();
   if(c.crisis&&!practicing)crisisClock(el,c);
@@ -1282,7 +1339,7 @@ function decide(dir,deal){if(tipModal()){const t=$('#top');if(t){t.classList.add
   if(practicing){if(dir==='M'||!$('#top'))return;busy=true;const g=$('#gerard');g.hidden=true;tipBusy=false;tipQ.length=0;
     const el=$('#top'),c=PRACTICE;el.classList.add('anim');el.querySelector(dir==='R'?'.stamp.ok':'.stamp.no').style.opacity=1;SND.swipe();SND.stamp(dir==='R');
     el.style.transform=`translate3d(${dir==='R'?520:-520}px,40px,0) rotate(${dir==='R'?28:-28}deg)`;el.style.opacity=0;previewStats(null);
-    const dd=c[dir].slice();STATS.forEach((s,i)=>S[s.k]+=dd[i]);dayStart={...S};updateStats();if(dir==='L'){PX.ghostPath=true;PX.ritual=0;PX.ritualNext=1;}
+    const dd=c[dir].slice();STATS.forEach((s,i)=>S[s.k]+=dd[i]);dayStart={...S};updateStats();if(dir==='L'&&secUnlocked()){PX.ghostPath=true;PX.ritual=0;PX.ritualNext=1;}
     setTimeout(()=>{practicing=false;practiced=true;document.body.classList.remove('practice');stage.innerHTML='';toast(c,dir,dd);gate();updateStats();
       if(dir==='L'){if(PREF.tips)tip('coffeeNo','top');else setTimeout(()=>toastText('👻 '+N(TIPS.coffeeNo||'No coffee? … Fine. I’ll remember that.')),400);}tip('practiceDone','top');},300);return;}
   {const g=$('#gerard');if(!g.hidden&&g.classList.contains('bottom')&&!g.classList.contains('intro')){g.hidden=true;tipBusy=false;setTimeout(pumpTip,600);}}
@@ -1335,11 +1392,22 @@ function flow(last){
 }
 // Mr. Quiz: between two dossiers of the same day, never right before a crisis or during the practice round.
 function quizDue(){
-  if(typeof QUIZ==='undefined'||!QUIZ_Q.length||practicing||day<QUIZ.from||PX.possessed)return false;
+  if(typeof QUIZ==='undefined'||!feat('quiz')||!QUIZ_Q.length||practicing||day<QUIZ.from||PX.possessed)return false;
   if(PX.quizDay===day)return false;const nx=CARDS[deck[idx]];if(!nx||nx.crisis||nx.ritual)return false;
   return Math.random()<QUIZ.chance;}
 function mrQuiz(next){
-  PX.quizDay=day;PX.quizUsed=PX.quizUsed||[];
+  PX.quizDay=day;const ch=CHARS.quiz;SND.theme&&SND.theme('quiz');SND.chime&&SND.chime();
+  layer.innerHTML=`<div class="veil letter"><div class="modal evt quiz" role="dialog" aria-modal="true" aria-labelledby="qz-ask">
+    <div class="kicker">Day ${day} · between two meetings · ding ding!</div>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div></div></div>
+    <h3 id="qz-ask" style="margin-top:10px">Do you wanna play with Quizy Tingel?</h3>
+    <div class="opts"><button class="acc" id="qz-yes" type="button">Yes!</button><button id="qz-no" type="button">Not now</button></div>
+    <div id="qz-hi" class="hi" hidden style="font-size:28px;text-align:center;margin:10px 0">hihihi</div></div></div>`;
+  $('#qz-yes').focus({preventScroll:true});
+  $('#qz-no').onclick=()=>{layer.innerHTML='';next();};
+  $('#qz-yes').onclick=()=>{$('#qz-yes').disabled=$('#qz-no').disabled=true;layer.querySelector('.opts').hidden=true;$('#qz-hi').hidden=false;SND.chime&&SND.chime();setTimeout(()=>quizAsk(next),1200);};
+}
+function quizAsk(next){PX.quizUsed=PX.quizUsed||[];
   let pool=QUIZ_Q.map((_,i)=>i).filter(i=>!PX.quizUsed.includes(i));if(!pool.length){PX.quizUsed=[];pool=QUIZ_Q.map((_,i)=>i);}
   const qi=pool[Math.floor(Math.random()*pool.length)],q=QUIZ_Q[qi];PX.quizUsed.push(qi);
   // the prize: the bar furthest from the middle, if it is in danger; otherwise cash
@@ -1347,7 +1415,7 @@ function mrQuiz(next){
   const fix=far.d>=50-QUIZ.danger?far:null,dir=fix?(S[fix.s.k]<50?1:-1):0;
   const prize=fix?`${fix.s.ico} ${fix.s.lbl} ${dir>0?'+':'−'}${QUIZ.boost}`:`💶 +${eur(QUIZ.cash)}`;
   const pitch=fix?`Answer right and I’ll sort out your ${fix.s.lbl} problem.`:`Answer right and there’s a little prize money in it.`;
-  const ch=CHARS.quiz;SND.theme&&SND.theme('quiz');SND.chime&&SND.chime();
+  const ch=CHARS.quiz;
   layer.innerHTML=`<div class="veil letter"><div class="modal evt quiz" role="dialog" aria-modal="true" aria-labelledby="qz-t">
     <div class="kicker">Day ${day} · between two meetings · ding ding!</div>
     <h3 id="qz-t">Pop quiz!</h3>
@@ -1417,7 +1485,7 @@ function eveningPaper(diff,last,done){
       box:`<div class="np-box"><b>Your day in numbers</b>${dayLog.length} dossiers, ${dayMatch}× same choice as Brussels${fx(diff)}</div>`,
       foot:WEATHER[(day-1)%WEATHER.length],tag:'Front page'});}
   // a crisis is brewing: guaranteed after a long calm streak, otherwise a small chance
-  if(!last&&day+1>=CRISIS_FROM&&PX.crisisDay!==day&&(PX.calm>=CRISIS_CALM||Math.random()<CRISIS_CHANCE)){
+  if(!last&&feat('crisis')&&day+1>=CRISIS_FROM&&PX.crisisDay!==day&&(PX.calm>=CRISIS_CALM||Math.random()<CRISIS_CHANCE)){
     const k=CARDS.findIndex(c=>c.crisis&&!(PX.crises||[]).includes(c.id));
     if(k>-1){const cc=CARDS[k];(PX.crises=PX.crises||[]).push(cc.id);PX.crisisDay=day;PX.calm=0;deck.splice(idx,0,k);
       pages.push({kick:'Crisis',head:`Crisis looms: “${cc.title}”`,sub:'Things were going a little too well. That never lasts in Brussels.',
@@ -1500,7 +1568,7 @@ function expose(next){
   b.onclick=()=>{const d=deadStat();if(d){layer.innerHTML='';return gameOver(d);}cause=null;next();};
 }
 // ---------- Vera Ferret, the hired investigator ----------
-function invDue(last){if(last||typeof INVESTIGATOR==='undefined'||day<INVESTIGATOR.from)return null;if(PX.invDay&&day-PX.invDay<INVESTIGATOR.every)return null;
+function invDue(last){if(last||!feat('investigator')||typeof INVESTIGATOR==='undefined'||day<INVESTIGATOR.from)return null;if(PX.invDay&&day-PX.invDay<INVESTIGATOR.every)return null;
   const low=STATS.filter(s=>(PX.low||{})[s.k]>=INVESTIGATOR.days).sort((a,b)=>S[a.k]-S[b.k]);return low.length?low[0].k:null;}
 function investigate(k,next){
   const I=INVESTIGATOR,st=STATS.find(s=>s.k===k),ch=CHARS.investigator,sc=INV_SCANDALS[Math.floor(Math.random()*INV_SCANDALS.length)],client=INV_CLIENTS[k]||'Someone';
@@ -1671,7 +1739,7 @@ function termReview(won,endKey,fut){
     <h4>What you did next</h4><p class="rv-next">${N(a.text)}</p>${a.real?`<p class="rv-real">${a.real}</p>`:''}</div>`;
 }
 function gameOver(s){
-  inGame=false;clearSave();SND.fired();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
+  metaEnd(false);inGame=false;clearSave();SND.fired();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
   const zone=S[s.k]<=0?'low':'high',E=ENDING[s.k][zone],dirSign=zone==='low'?-1:1,si=STATS.indexOf(s);
   const worst=hist.filter(h=>h.dd&&h.dd[si]*dirSign>0).sort((a,b)=>b.dd[si]*dirSign-a.dd[si]*dirSign).slice(0,3);
   const verb=h=>h.dir==='R'?'approved':h.dir==='M'?'compromised on':'rejected';
@@ -1730,6 +1798,7 @@ const secLine=t=>N(String(t).replace(/\{island\}/g,eur(ISLAND_PRICE)).replace(/\
 function secStatus(){const f=futStatus();f.job={ok:false,prog:Math.min(idx,deck.length)+' of '+deck.length+' dossiers'};return f;}
 function updateSecTab(){const t=$('#secTab');if(!t)return;const n=secrets().length;t.hidden=!n||!inGame;if(!n)closeSecrets();$('#secN').textContent=n?n+'/'+FUTURES.length:'';}
 function revealSecret(k,then){
+  if(!secUnlocked()){if(then)then();return;}
   if(secrets().includes(k)){if(then)then();return;}
   if(!then&&(layer.innerHTML||tipModal()||!$('#top'))){setTimeout(()=>revealSecret(k),600);return;}
   const S0=SECRETS[k],ch=CHARS[S0.char],F=FUTURES.find(f=>f.id===k);if(!ch||!F)return;
@@ -1790,7 +1859,7 @@ function possessed(){
     $('#restart').onclick=()=>{ghostRename();start();};$('#restart').focus({preventScroll:true});};
 }
 function win(){
-  inGame=false;clearSave();SND.win();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
+  metaEnd(true);inGame=false;clearSave();SND.win();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
   const st=futStatus();
   layer.innerHTML=`<div class="veil over win"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h">
    <div class="kicker">Term completed · day ${day}</div><div class="big">★</div><h3 id="ov-h">Time to move on, ${N('{name}')}.</h3>

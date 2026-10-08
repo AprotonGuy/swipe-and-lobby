@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.4 demo';
+const GAME_VERSION='v0.5 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].
@@ -719,7 +719,7 @@ const CHARS={
   <rect x="45" y="55" width="13" height="6" rx="2" fill="#141014"/><rect x="62" y="55" width="13" height="6" rx="2" fill="#141014"/><path d="M58 57 H62" stroke="#141014" stroke-width="2"/>
   <path d="M53 70 Q61 72 67 67" stroke="#4a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>
   <ellipse cx="60" cy="46" rx="31" ry="6" fill="#1d1820"/><path d="M42 46 Q42 25 60 25 Q78 25 78 46Z" fill="#241e28"/><rect x="42" y="39" width="36" height="5" fill="#713f52"/></svg>`},
- quiz:{added:'2026-10-08',name:'Mr. Quiz, quizmaster',tag:'lives in the building · nobody knows since when',hello:'"Ding ding! Pop quiz, {name}. The EU won’t explain itself."',svg:`<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="58" fill="#e8b84a" opacity=".35"/>
+ quiz:{added:'2026-10-08',name:'Quizy Tingel, quizmaster',tag:'lives in the building · nobody knows since when',hello:'"Ding ding! Pop quiz, {name}. The EU won’t explain itself."',svg:`<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="58" fill="#e8b84a" opacity=".35"/>
   <path d="M14 120 Q18 86 44 81 L60 94 L76 81 Q102 86 106 120Z" fill="#7a2f8f"/><path d="M48 88 L60 96 L72 88 L72 100 L60 94 L48 100Z" fill="#f2c94c"/>
   <rect x="50" y="68" width="20" height="16" rx="6" fill="#e9c4a0"/><ellipse cx="60" cy="50" rx="23" ry="26" fill="#f1d0ad"/>
   <path d="M36 44 Q38 20 60 20 Q82 20 84 44 Q76 30 60 31 Q44 30 36 44Z" fill="#3a2a1e"/>
@@ -1430,7 +1430,7 @@ SOCIETY["An ethics watchdog with teeth"]="Scandals erode trust in the EU. Oppone
 NEWS["An ethics watchdog with teeth"]={"R": "Ethics watchdog gets teeth; several MEPs suddenly remember gifts they forgot to declare", "L": "Ethics body stays toothless; free football tickets back in fashion"};
 ALT["an-ethics-watchdog-with-teeth"]={"R": "An ethics body that can investigate and punish. A few MEPs return their gifts; the rest check their calendars nervously.", "L": "The watchdog stays toothless. It may bark, but only in non-binding opinions."};
 
-// Mr. Quiz: pops up between dossiers with a question about Europe and the EU.
+// Quizy Tingel: pops up between dossiers with a question about Europe and the EU.
 // Right answer: the bar that needs it most moves `boost` toward the middle (or you get €`cash`k if all bars are safe).
 // Wrong answer: no penalty, you just learn the real answer. Questions adapted from Europedia (by Wesley vanroose).
 const QUIZ={from:2,chance:.2,boost:6,cash:5,danger:35,perDay:1};
@@ -1500,3 +1500,21 @@ const QUIZ_Q=[
 {q:"What is the European Parliament’s film prize called?",o:["The Golden Bear", "The LUX Prize", "The César", "The Golden Calf"],c:1,fact:"The LUX Prize. The public all over Europe votes too, and the winning films are subtitled in all EU languages.",src:[["Wikipedia: Lux Prize", "https://en.wikipedia.org/wiki/Lux_Prize"]]},
 {q:"Since October 2025, what must your bank in the euro countries offer under EU rules?",o:["A free credit card", "A transfer that arrives within 10 seconds, no dearer than a normal one", "At least 3% interest", "Its own app for every customer"],c:1,fact:"An instant euro transfer that reaches the other account within 10 seconds, and may not cost more than a normal transfer.",src:[["Wikipedia: Single Euro Payments Area", "https://en.wikipedia.org/wiki/Single_Euro_Payments_Area"]]}
 ];
+
+// Unlocks across games. A "term" is one game; term 1 is your first game on this device.
+// features: from which term a system is switched on. Dossiers: starter pool in term 1, waves after that, the rest from `allFrom`.
+const PROGRESSION={
+ features:{compromise:2,crisis:2,shop:3,offers:3,media:4,pacts:5,world:5,inflation:5,investigator:6,quiz:6},
+ starter:['keep-our-own-charger','keep-roaming-charges','save-the-straw','no-shock-photos','no-gatekeeper-law','privacy-but-flexible','no-cap-on-bonuses','keep-the-neonicotinoids','scrap-the-nature-restoration-law','end-the-cage-age','stop-the-shark-fin-trade','a-little-slack-in-the-road-test','natural-gas-is-green-too','make-platforms-pay','free-co2-allowances','delay-the-deforestation-law','no-traffic-light-on-the-label','ditch-the-reusable-cup','let-us-shoot-the-wolf','no-tax-on-trading'],
+ waves:{
+  2:['weedkiller-for-15-more-years','let-us-regulate-ai-ourselves','couriers-are-entrepreneurs','save-the-combustion-engine','a-decent-minimum-wage','a-right-to-repair','water-is-a-human-right','park-the-cookie-law'],
+  3:['a-second-pipe-under-the-baltic','let-publishers-switch-off-games','keep-salaries-secret','make-netflix-pay-for-the-network','no-register-for-foreign-lobbying','ban-the-fake-green-labels','dont-halve-our-pesticides','forgive-the-co2-fines']},
+ allFrom:4,
+ ladder:[
+  {term:1,ico:'📁',name:'Dossiers, Gerard and the evening paper'},
+  {term:2,ico:'⚖️',name:'Compromises and crises'},
+  {term:3,ico:'🛍️',name:'The shop and backroom deals'},
+  {term:4,ico:'👀',name:'Media attention'},
+  {term:5,ico:'🌙',name:'Midnight visitors, world news and inflation'},
+  {term:6,ico:'🔔',name:'Vera Ferret and Quizy Tingel'},
+  {terms:1,ico:'🤫',name:'The Secret list, the Brotherhood trial and the ghost path',hint:'Finish a full term once'}]};

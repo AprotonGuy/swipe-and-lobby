@@ -1,5 +1,16 @@
 # Swipe & Lobby — changelog
 
+## v0.5 demo (8 oktober 2026)
+
+**Nieuw**
+- Unlocks: hoe vaker je speelt, hoe meer je vrijspeelt. Potje 1 heeft alleen de basis (dossiers, Gerard en de avondkrant, met 20 startdossiers). Daarna komen er per potje dingen bij: compromis en crises, de winkel en backroom deals, media, nachtbezoekers en inflatie, en ten slotte Vera Ferret en Quizy Tingel. Tot potje 4 komen er ook nieuwe dossiers bij, met het label "New dossier".
+- De geheime lijst, de Groene Proef en het spookpad komen vrij na je eerste voltooide termijn.
+- In het startmenu staat het tabje "Unlocks": wat vrij is en wat er nog komt. Settings heeft "Unlock everything" om te testen.
+- Heb je iets vrijgespeeld, dan krijg je op het startscherm een pop-up met een vrolijk deuntje.
+
+**Verbeterd**
+- Mr. Quiz heet nu Quizy Tingel. Hij vraagt eerst "Do you wanna play with Quizy Tingel?" en giechelt "hihihi" als je ja zegt.
+
 ## v0.4 demo (8 oktober 2026)
 
 **Nieuw**
