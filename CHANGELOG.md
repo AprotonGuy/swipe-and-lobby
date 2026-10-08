@@ -1,5 +1,10 @@
 # Swipe & Lobby — changelog
 
+## v0.5.3 demo (8 oktober 2026)
+
+**Opgelost**
+- Het lettertype "Dyslexia friendly" werkte niet op de live site, omdat het lettertypebestand ontbrak. Het staat er nu bij.
+
 ## v0.5.2 demo (8 oktober 2026)
 
 **Verbeterd**
