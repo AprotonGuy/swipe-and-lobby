@@ -289,7 +289,7 @@ body.hasM .choices .m{display:flex;flex-direction:column;align-items:center;just
 .gwelcome{background:radial-gradient(70% 50% at 50% 30%,rgba(122,156,150,.35),transparent 70%),radial-gradient(120% 80% at 50% 0%,#4a3a48,var(--night) 70%);place-items:center}
 .gw{max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;width:min(420px,100%);text-align:center;color:#26303a;background:linear-gradient(180deg,rgba(236,241,243,.97),rgba(212,223,228,.97));border-radius:18px;padding:16px 18px 14px;box-shadow:0 0 50px rgba(200,225,235,.35),0 20px 50px rgba(0,0,0,.5);animation:materialize2 1.6s ease-out}
 @keyframes materialize2{0%{opacity:0;filter:blur(10px);transform:translateY(14px) scale(.9)}60%{opacity:.65;filter:blur(2px)}100%{opacity:1;filter:none;transform:none}}
-.gw-ghost{width:96px;height:96px;margin:-58px auto 4px;border-radius:50%;background:rgba(122,156,150,.3);box-shadow:0 0 30px rgba(220,240,245,.6);animation:gfloat 3s ease-in-out infinite}
+.gw-ghost{width:84px;height:84px;margin:4px auto 4px;border-radius:50%;background:rgba(122,156,150,.3);box-shadow:0 0 30px rgba(220,240,245,.6);animation:gfloat 3s ease-in-out infinite}
 .gw-ghost svg{width:100%;height:100%}
 .gw-kick{font:700 10.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#486b7f}
 .gw h3{margin:4px 0 2px;font:800 30px/1 var(--f-display);color:#26303a}
@@ -811,7 +811,7 @@ function ghostWelcome(next){
     <div class="gw-ghost">${CHARS.ghost.svg}</div>
     <div class="gw-kick">👻 A ghost appears</div>
     <h3 id="gw-h">${escH(W.head)}</h3>
-    ${(()=>{const P=[['p1','p2'],['p3','p4','p5']].map(g=>g.filter(k=>W[k])).filter(g=>g.length);W._pages=P;
+    ${(()=>{const P=[['p1','p2'],['p3'],['p4','p5']].map(g=>g.filter(k=>W[k])).filter(g=>g.length);W._pages=P;
       return P.map((g,n)=>`<div class="gw-pg" id="gw-p${n+1}"${n?' hidden':''}>${g.map(k=>`<p>${N(W[k])}</p>`).join('')}</div>`).join('');})()}
     <button class="next" id="gw-go" type="button">${W._pages.length>1?escH(W.next||'Next →'):escH(W.go)}</button>
     <button class="gw-skip" id="gw-skip" type="button">I know the game, no tips please</button></div></div>`;

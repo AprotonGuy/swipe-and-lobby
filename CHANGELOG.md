@@ -1,5 +1,11 @@
 # Swipe & Lobby — changelog
 
+## v0.3.1 demo (8 oktober 2026)
+
+**Opgelost**
+- Pagina 3 van Gerards welkom ("But this building is… odd") was per ongeluk weggevallen. Hij staat er weer.
+- Het spook werd bovenaan zijn welkomvenster afgeknipt. Hij staat nu helemaal in beeld.
+
 ## v0.3 demo (8 oktober 2026)
 
 **Nieuw**

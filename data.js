@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.3 demo';
+const GAME_VERSION='v0.3.1 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].
@@ -676,7 +676,8 @@ const GERARD_WELCOME={
  p3:'Every dossier on your desk is real. The EU keeps the records itself: the laws in EUR-Lex, and who came lobbying in the EU Transparency Register. And some files come from the darker corners. Watchdogs like LobbyFacts, LobbyControl and Corporate Europe Observatory dig through the paperwork the lobbyists would rather you didn’t read.',
  next:'Next →',
  kick2:'👻 Where the files come from',
- p4:'', // (removed: the “two dimensions” paragraph; fill in again to bring it back)
+ kick3:'👻 One more thing',
+ p4:'But this building is… odd. Some corners of this building seem to exist twice: once in your Europe, and once in the real one. You’ll see it in the evening paper. What you decided, and what really happened. Two worlds, side by side. Don’t stare too long at the gap between them. I did.',
  p5:'I’m stuck haunting this office anyway, so I’ll whisper tips along the way.',
  go:'Nice to meet you, Gerard Loby'
 };
