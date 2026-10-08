@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.2 demo';
+const GAME_VERSION='v0.3 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].
@@ -673,7 +673,11 @@ const GERARD_WELCOME={
  head:'Boooo!',
  p1:'… Sorry. Old habit. You read that letter right, {name}: this building is haunted. By me. I’m Gerard Loby. I had this job before you: lobbyist first, then Commissioner. I didn’t make it to the end of my term. Let’s just say it ended badly.',
  p2:'Here’s how it works. Every day four lobbyists come in. Swipe right to approve, left to reject. Keep the four bars away from empty and full, or you’re out. Like me.',
- p3:'I’m stuck haunting this office anyway, so I’ll whisper tips along the way.',
+ p3:'Every dossier on your desk is real. The EU keeps the records itself: the laws in EUR-Lex, and who came lobbying in the EU Transparency Register. And some files come from the darker corners. Watchdogs like LobbyFacts, LobbyControl and Corporate Europe Observatory dig through the paperwork the lobbyists would rather you didn’t read.',
+ next:'Next →',
+ kick2:'👻 Where the files come from',
+ p4:'', // (removed: the “two dimensions” paragraph; fill in again to bring it back)
+ p5:'I’m stuck haunting this office anyway, so I’ll whisper tips along the way.',
  go:'Nice to meet you, Gerard Loby'
 };
 // For now (demo/testing): Gerard always shows his full welcome and all tips again in every new game.

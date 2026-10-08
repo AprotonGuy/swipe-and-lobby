@@ -1,5 +1,16 @@
 # Swipe & Lobby — changelog
 
+## v0.3 demo (8 oktober 2026)
+
+**Nieuw**
+- Elk personage heeft een eigen deuntje tijdens backroom deals, nachtbezoeken en geheimen: van noir-jazz voor de Man in the Raincoat tot een mars voor de Socialist. Daarna komt de gewone lobbymuziek terug.
+- Het welkom van Gerard bestaat nu uit drie pagina's: wie hij is en hoe het spel werkt, waar de dossiers vandaan komen (EUR-Lex, het EU Transparency Register, LobbyFacts, LobbyControl en Corporate Europe Observatory) en het vreemde gebouw met twee werelden.
+- Nieuwe portretten: Dr. Harald Weedburn (nieuwe versie) en Klaus Dieselhoff.
+
+**Verbeterd**
+- Lobbyist-portretten worden automatisch op dezelfde hoogte gezet.
+- Gerards uitleg bij de eerste avondkrant is weg, omdat het welkom dat nu vertelt.
+
 ## v0.2 demo (8 oktober 2026)
 
 **Nieuw**

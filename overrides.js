@@ -12,6 +12,7 @@ const OVERRIDES={
 };
 const ART={
  'person:dr-harald-weedburn':'art/person-dr-harald-weedburn.png',
+ 'person:klaus-dieselhoff':'art/person-klaus-dieselhoff.png',
  'sector:AGRO':'art/sector-AGRO.png',
  'sector:AUTO':'art/sector-AUTO.png',
  'sector:BANK':'art/sector-BANK.png',

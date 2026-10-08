@@ -287,7 +287,7 @@ body.hasM .choices .m{display:flex;flex-direction:column;align-items:center;just
 .ag-new p{margin:3px 0;font:400 12.5px/1.35 var(--f-body)}
 .ag-new{margin:6px 0 10px!important;padding:6px 9px!important}
 .gwelcome{background:radial-gradient(70% 50% at 50% 30%,rgba(122,156,150,.35),transparent 70%),radial-gradient(120% 80% at 50% 0%,#4a3a48,var(--night) 70%);place-items:center}
-.gw{width:min(420px,100%);text-align:center;color:#26303a;background:linear-gradient(180deg,rgba(236,241,243,.97),rgba(212,223,228,.97));border-radius:18px;padding:16px 18px 14px;box-shadow:0 0 50px rgba(200,225,235,.35),0 20px 50px rgba(0,0,0,.5);animation:materialize2 1.6s ease-out}
+.gw{max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;width:min(420px,100%);text-align:center;color:#26303a;background:linear-gradient(180deg,rgba(236,241,243,.97),rgba(212,223,228,.97));border-radius:18px;padding:16px 18px 14px;box-shadow:0 0 50px rgba(200,225,235,.35),0 20px 50px rgba(0,0,0,.5);animation:materialize2 1.6s ease-out}
 @keyframes materialize2{0%{opacity:0;filter:blur(10px);transform:translateY(14px) scale(.9)}60%{opacity:.65;filter:blur(2px)}100%{opacity:1;filter:none;transform:none}}
 .gw-ghost{width:96px;height:96px;margin:-58px auto 4px;border-radius:50%;background:rgba(122,156,150,.3);box-shadow:0 0 30px rgba(220,240,245,.6);animation:gfloat 3s ease-in-out infinite}
 .gw-ghost svg{width:100%;height:100%}
@@ -582,6 +582,8 @@ let PX={}, hist=[], warned={}, matchTotal=0, spawned=[], bonus=0, PL=1, inf=INFL
 let money=START_MONEY, heat=0, owned=[], promises=new Map(), S, deck, idx, day, busy=false, dayLog=[], usedWorld=[], pending=[], usedEv=[], dayStart=null, dayMatch=0, cause=null;
 const $=s=>document.querySelector(s);
 const stage=$('#stage'), layer=$('#layer');
+// back to the lobby lounge whenever a visitor's window closes
+new MutationObserver(()=>{if(!layer.innerHTML&&typeof SND!=='undefined'&&SND.theme)SND.theme('main');}).observe(layer,{childList:true});
 // Apply edits made in the control room (lines + own art). Keys: card:<id>, follow:<id>, char:<k>, event:<id>.
 // Text edits from the Regiekamer: first from overrides.js, then live from the game's own store (see bottom).
 function applyText(O){
@@ -648,17 +650,54 @@ const SND=(()=>{
   const noise=(t,d,g,from,to,type='bandpass')=>{const n=ctx.createBufferSource(),b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*d),ctx.sampleRate),c=b.getChannelData(0);
     for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;n.buffer=b;const f=ctx.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(from,t);f.frequency.exponentialRampToValueAtTime(to,t+d);
     const a=ctx.createGain();a.gain.setValueAtTime(g,t);a.gain.exponentialRampToValueAtTime(.0001,t+d);n.connect(f);f.connect(a);a.connect(sfxGain);n.start(t);n.stop(t+d);};
-  // Music: a slow, slightly smug "lobby lounge" loop (Dm7 G7 Cmaj7 A7)
-  const CH=[[146.8,174.6,220,261.6],[196,246.9,293.7,349.2],[130.8,164.8,196,246.9],[110,138.6,164.8,196]];
-  const BASS=[73.4,98,65.4,55],BEAT=.5;
-  const sched=()=>{while(nextT<ctx.currentTime+.6){const bar=Math.floor(step/8)%4,b=step%8;
-      if(b===0)CH[bar].forEach((f,i)=>tone(f,nextT+i*.03,BEAT*7.5,'triangle',.05,musicGain));
-      if(b===0||b===3||b===4||b===6)tone(BASS[bar]*(b===6?1.5:1),nextT,BEAT*1.2,'sine',.16,musicGain);
-      if(b%2===1&&Math.random()<.55){const c=CH[bar];tone(c[(Math.random()*4)|0]*2,nextT,.35,'sine',.03,musicGain);}
-      step++;nextT+=BEAT;}};
+  // Music: themes. 'main' is the slow, slightly smug "lobby lounge" loop (Dm7 G7 Cmaj7 A7);
+  // every backroom/night visitor has a little tune of their own. Four chords, eight steps per chord.
+  const F=m=>440*Math.pow(2,(m-69)/12), C=(...m)=>m.map(F);
+  const THEMES={
+   main:{beat:.5,ch:[[146.8,174.6,220,261.6],[196,246.9,293.7,349.2],[130.8,164.8,196,246.9],[110,138.6,164.8,196]],bass:[73.4,98,65.4,55],pad:.05,wave:'triangle',mp:.55},
+   shady:{beat:.62,ch:[C(57,60,64,67),C(50,53,57,60),C(52,56,59,62),C(57,60,64,69)],bass:C(45,38,40,33),pad:.04,wave:'sine',walk:1,perc:'brush',mp:.35,mw:'triangle'},
+   fatcat:{beat:.36,ch:[C(58,62,65,69),C(55,58,62,65),C(60,63,67,70),C(53,57,60,63)],bass:C(46,43,48,41),pad:.045,wave:'triangle',walk:1,perc:'swing',mp:.5,mw:'square',mo:1},
+   suit:{beat:.42,ch:[C(60,64,67,71),C(57,60,64,67),C(53,57,60,64),C(55,59,62,64)],bass:C(48,45,41,43),pad:.04,wave:'sine',arp:1,mp:.2},
+   hippie:{beat:.45,ch:[C(55,59,62,67),C(60,64,67,72),C(62,66,69,74),C(55,59,62,67)],bass:C(43,48,50,43),pad:.045,wave:'triangle',perc:'tamb',mp:.6},
+   gamer:{beat:.28,ch:[C(60,64,67,72),C(55,59,62,67),C(57,60,64,69),C(53,57,60,65)],bass:C(48,43,45,41),pad:.025,wave:'square',arp:1,mp:.2,mw:'square'},
+   foreign:{beat:.5,ch:[C(62,65,69,74),C(55,58,62,67),C(57,61,64,67),C(62,65,69,74)],bass:C(38,43,45,38),pad:.045,wave:'triangle',mp:.6,mw:'sine',perc:'brush'},
+   mom:{beat:.4,ch:[C(65,69,72,77),C(58,62,65,70),C(60,64,67,72),C(65,69,72,77)],bass:C(41,46,48,41),pad:.045,wave:'triangle',mp:.5,perc:'tick'},
+   investigator:{beat:.56,ch:[C(60,63,67,72),C(56,60,63,68),C(53,56,60,65),C(55,59,62,67)],bass:C(36,32,29,31),pad:.04,wave:'sine',perc:'clock',mp:.25,mw:'triangle'},
+   angel:{beat:.9,ch:[C(72,76,79,83),C(65,69,72,76),C(69,72,76,79),C(67,72,74,79)],bass:C(48,41,45,43),pad:.04,wave:'sine',mp:.4,mo:2},
+   devil:{beat:.75,ch:[C(50,53,56,62),C(49,52,56,61),C(50,53,57,62),C(44,50,53,56)],bass:C(26,25,26,20),pad:.035,wave:'sawtooth',lp:1,mp:.15},
+   banker:{beat:.7,ch:[C(52,55,59,64),C(48,52,55,59),C(45,48,52,57),C(47,51,54,59)],bass:C(28,24,33,35),pad:.04,wave:'triangle',walk:1,mp:.25,mw:'sine'},
+   earth:{beat:.8,ch:[C(63,67,70,75),C(60,63,67,72),C(56,60,63,68),C(58,62,65,70)],bass:C(39,36,44,46),pad:.045,wave:'sine',mp:.65,mo:2,perc:'tamb'},
+   time:{beat:.5,ch:[C(57,60,64,69),C(53,57,60,65),C(60,64,67,72),C(55,59,62,67)],bass:C(45,41,48,43),pad:.04,wave:'triangle',perc:'clock',mp:.2},
+   justice:{beat:.7,ch:[C(50,53,57,62),C(46,50,53,58),C(53,57,60,65),C(57,61,64,69)],bass:C(38,34,41,45),pad:.035,wave:'square',lp:1,mp:.15},
+   ghost:{beat:.85,ch:[C(60,64,68,72),C(62,66,70,74),C(64,68,72,76),C(62,66,70,74)],bass:C(36,38,40,38),pad:.035,wave:'sine',mp:.5,mo:2,mw:'sine'},
+   socialist:{beat:.42,ch:[C(60,64,67,72),C(53,57,60,65),C(55,59,62,67),C(60,64,67,72)],bass:C(36,41,43,36),pad:.045,wave:'square',lp:1,perc:'march',mp:.3}};
+  let T=THEMES.main,curTheme='main';
+  const mnoise=(t,d,g,f,type='highpass')=>{const n=ctx.createBufferSource(),b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*d),ctx.sampleRate),c=b.getChannelData(0);
+    for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;n.buffer=b;const fl=ctx.createBiquadFilter();fl.type=type;fl.frequency.value=f;
+    const a=ctx.createGain();a.gain.setValueAtTime(g,t);a.gain.exponentialRampToValueAtTime(.0001,t+d);n.connect(fl);fl.connect(a);a.connect(musicGain);n.start(t);n.stop(t+d);};
+  const mtone=(f,t,d,type,g)=>{if(T.lp&&type!=='sine'){const o=ctx.createOscillator(),lp=ctx.createBiquadFilter(),a=ctx.createGain();o.type=type;o.frequency.value=f;lp.type='lowpass';lp.frequency.value=900;
+      a.gain.setValueAtTime(0,t);a.gain.linearRampToValueAtTime(g,t+.03);a.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(lp);lp.connect(a);a.connect(musicGain);o.start(t);o.stop(t+d+.05);return;}
+    tone(f,t,d,type,g,musicGain);};
+  const sched=()=>{const B=T.beat;while(nextT<ctx.currentTime+.6){const bar=Math.floor(step/8)%4,b=step%8,ch=T.ch[bar];
+      if(b===0)ch.forEach((f,i)=>mtone(f,nextT+i*.03,B*7.5,T.wave,T.pad));
+      if(T.walk){if(b%2===0)mtone(T.bass[bar]*[1,1.26,1.5,1.33][b/2],nextT,B*1.6,'sine',.15);}
+      else if(b===0||b===3||b===4||b===6)mtone(T.bass[bar]*(b===6?1.5:1),nextT,B*1.2,'sine',.16);
+      if(T.arp)mtone(ch[b%4]*2,nextT,B*.9,T.mw||'triangle',.03);
+      if(b%2===1&&Math.random()<T.mp)mtone(ch[(Math.random()*4)|0]*(T.mo||2),nextT,.35,T.mw||'sine',.03);
+      if(T.perc==='brush'&&b%2===0)mnoise(nextT,.12,.05,3000);
+      if(T.perc==='swing'&&(b%2===1||b===0))mnoise(nextT+(b%2?B*.15:0),.05,.06,6000);
+      if(T.perc==='tamb'&&b%2===1)mnoise(nextT,.08,.05,7000);
+      if(T.perc==='tick'&&b%2===0)mnoise(nextT,.02,.06,5000);
+      if(T.perc==='clock')mnoise(nextT,.015,b%2?.04:.08,b%2?4000:2500);
+      if(T.perc==='march'&&(b===2||b===6))mnoise(nextT,.14,.09,1800,'bandpass');
+      step++;nextT+=B;}};
+  const setTheme=k=>{const nk=THEMES[k]?k:'main';if(nk===curTheme)return;curTheme=nk;if(!ctx){T=THEMES[nk];return;}
+    const g=PREF.music?.11:0,now=ctx.currentTime;musicGain.gain.cancelScheduledValues(now);musicGain.gain.setTargetAtTime(0,now,.12);
+    setTimeout(()=>{if(curTheme!==nk)return;T=THEMES[nk];step=0;nextT=ctx.currentTime+.08;musicGain.gain.setTargetAtTime(PREF.music?.11:0,ctx.currentTime,.25);},450);};
   const startMusic=()=>{if(!ensure())return;if(ctx.state==='suspended')ctx.resume();if(timer)return;nextT=ctx.currentTime+.1;timer=setInterval(sched,150);};
   return{
     unlock(){if(ensure()&&ctx.state==='suspended')ctx.resume();startMusic();},
+    theme(k){setTheme(k);},
     setMusic(on){PREF.music=on;savePref();if(ctx)musicGain.gain.setTargetAtTime(on?.11:0,ctx.currentTime,.2);},
     setSfx(on){PREF.sfx=on;savePref();if(ctx)sfxGain.gain.setTargetAtTime(on?.5:0,ctx.currentTime,.05);},
     swipe(){if(!ctx||!PREF.sfx)return;noise(ctx.currentTime,.28,.5,2200,500);},
@@ -772,10 +811,14 @@ function ghostWelcome(next){
     <div class="gw-ghost">${CHARS.ghost.svg}</div>
     <div class="gw-kick">👻 A ghost appears</div>
     <h3 id="gw-h">${escH(W.head)}</h3>
-    ${['p1','p2','p3'].filter(k=>W[k]).map(k=>`<p>${N(W[k])}</p>`).join('')}
-    <button class="next" id="gw-go" type="button">${escH(W.go)}</button>
+    ${(()=>{const P=[['p1','p2'],['p3','p4','p5']].map(g=>g.filter(k=>W[k])).filter(g=>g.length);W._pages=P;
+      return P.map((g,n)=>`<div class="gw-pg" id="gw-p${n+1}"${n?' hidden':''}>${g.map(k=>`<p>${N(W[k])}</p>`).join('')}</div>`).join('');})()}
+    <button class="next" id="gw-go" type="button">${W._pages.length>1?escH(W.next||'Next →'):escH(W.go)}</button>
     <button class="gw-skip" id="gw-skip" type="button">I know the game, no tips please</button></div></div>`;
-  $('#gw-go').onclick=next;
+  const total=W._pages.length;let pg=1;
+  $('#gw-go').onclick=()=>{if(pg<total){$('#gw-p'+pg).hidden=true;pg++;$('#gw-p'+pg).hidden=false;SND.paper&&SND.paper();
+      $('#gw-h').hidden=true;$('.gw-kick').textContent=(pg===2?W.kick2:W.kick3)||'👻 One more thing';
+      $('#gw-go').textContent=pg<total?(W.next||'Next →'):W.go;$('#gw-go').focus({preventScroll:true});return;}next();};
   $('#gw-skip').onclick=()=>{PREF.tips=false;if(!GERARD_ALWAYS)savePref();next();};
   $('#gw-go').focus({preventScroll:true});
 }
@@ -992,7 +1035,7 @@ function pickPact(){
   const pool=PACTS.filter(p=>!PX.used.includes(p.id)&&(p.kind!=='contract'||deck.filter((d,k)=>k>=idx&&fits(d)).length>=2));
   return pool.length?pool[Math.floor(Math.random()*pool.length)]:null;}
 function pactOffer(p,nextDay){
-  SND.chime();tip('pact','top');PX.used.push(p.id);const ch=CHARS[p.char],tom=day+1;
+  SND.theme&&SND.theme(p.char);SND.chime();tip('pact','top');PX.used.push(p.id);const ch=CHARS[p.char],tom=day+1;
   layer.innerHTML=`<div class="veil letter night"><div class="modal evt" role="dialog" aria-modal="true" aria-labelledby="pk-t">
     <div class="kicker">Day ${day} · midnight</div>
     <h3 id="pk-t">Someone is sitting in your chair…</h3>
@@ -1382,7 +1425,7 @@ function eveningPaper(diff,last,done){
     b.focus({preventScroll:true});};
   if(!pages.length){done();return;}
   show();
-  tip('paper','top');if(day>=UNLOCK.inflation)tip('inflation','top');if(w)tip('world','top');
+  if(day>=UNLOCK.inflation)tip('inflation','top');if(w)tip('world','top');
 }
 function world(next){
   if(PX.unrest>0&&Math.random()<Math.min(.8,.25*PX.unrest)){PX.unrest=Math.max(0,PX.unrest-2);return showWorld(RIOT,next);}
@@ -1411,7 +1454,7 @@ function invDue(last){if(last||typeof INVESTIGATOR==='undefined'||day<INVESTIGAT
   const low=STATS.filter(s=>(PX.low||{})[s.k]>=INVESTIGATOR.days).sort((a,b)=>S[a.k]-S[b.k]);return low.length?low[0].k:null;}
 function investigate(k,next){
   const I=INVESTIGATOR,st=STATS.find(s=>s.k===k),ch=CHARS.investigator,sc=INV_SCANDALS[Math.floor(Math.random()*INV_SCANDALS.length)],client=INV_CLIENTS[k]||'Someone';
-  PX.invDay=day;PX.low[k]=0;SND.knock&&SND.knock();const can=money>=I.cost;
+  PX.invDay=day;PX.low[k]=0;SND.theme&&SND.theme('investigator');SND.knock&&SND.knock();const can=money>=I.cost;
   layer.innerHTML=`<div class="veil letter"><div class="modal evt" role="dialog" aria-modal="true" aria-labelledby="inv-t">
     <div class="kicker">Day ${day} · late evening · a knock on the door</div>
     <h3 id="inv-t">Someone has been digging…</h3>
@@ -1431,7 +1474,7 @@ function investigate(k,next){
     const b=$('#cont');b.textContent='Next morning →';b.focus({preventScroll:true});b.onclick=()=>{layer.innerHTML='';next();};};
 }
 function offer(ev,nextDay){
-  SND.chime();tip('offer','top');
+  SND.theme&&SND.theme(EVCHAR[ev.id]);SND.chime();tip('offer','top');
   usedEv.push(ev.id);const ch=CHARS[EVCHAR[ev.id]];
   layer.innerHTML=`<div class="veil letter"><div class="modal evt" role="dialog" aria-modal="true" aria-labelledby="ev-t">
     <div class="kicker">Day ${day} · The backroom deal</div>
@@ -1640,7 +1683,7 @@ function revealSecret(k,then){
   if(secrets().includes(k)){if(then)then();return;}
   if(!then&&(layer.innerHTML||tipModal()||!$('#top'))){setTimeout(()=>revealSecret(k),600);return;}
   const S0=SECRETS[k],ch=CHARS[S0.char],F=FUTURES.find(f=>f.id===k);if(!ch||!F)return;
-  secrets().push(k);SND.chime&&SND.chime();
+  secrets().push(k);SND.theme&&SND.theme(S0.char);SND.chime&&SND.chime();
   layer.innerHTML=`<div class="veil letter"><div class="modal evt secret" role="dialog" aria-modal="true" aria-labelledby="sec-t">
     <div class="kicker">Day ${day} · ${then?'Evening · a note under your door':'Overheard in the corridor'}</div>
     <h3 id="sec-t">${then?'Someone knocks after dark…':ch.name+' leans in…'}</h3>
