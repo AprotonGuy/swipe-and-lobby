@@ -1,5 +1,13 @@
 # Swipe & Lobby — changelog
 
+## v0.5.4 demo (8 oktober 2026)
+
+**Nieuw**
+- Nieuwe portretten: A.R.T.H.U.R. Promptier en Arthur 2.0 (met snor).
+
+**Verbeterd**
+- Nieuwe versie van het portret van Sophie Royaltée.
+
 ## v0.5.3 demo (8 oktober 2026)
 
 **Opgelost**

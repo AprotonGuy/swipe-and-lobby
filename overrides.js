@@ -16,6 +16,8 @@ const ART={
  'person:megan-cookiesworth':'art/person-megan-cookiesworth.png',
  'person:sophie-royaltee':'art/person-sophie-royaltee.png',
  'person:steve-appleby':'art/person-steve-appleby.png',
+ 'person:a-r-t-h-u-r-promptier':'art/person-a-r-t-h-u-r-promptier.png',
+ 'person:a-r-t-h-u-r-2-0-promptier':'art/person-a-r-t-h-u-r-2-0-promptier.png',
  'sector:AGRO':'art/sector-AGRO.png',
  'sector:AUTO':'art/sector-AUTO.png',
  'sector:BANK':'art/sector-BANK.png',
