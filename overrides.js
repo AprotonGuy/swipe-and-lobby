@@ -13,6 +13,9 @@ const OVERRIDES={
 const ART={
  'person:dr-harald-weedburn':'art/person-dr-harald-weedburn.png',
  'person:klaus-dieselhoff':'art/person-klaus-dieselhoff.png',
+ 'person:megan-cookiesworth':'art/person-megan-cookiesworth.png',
+ 'person:sophie-royaltee':'art/person-sophie-royaltee.png',
+ 'person:steve-appleby':'art/person-steve-appleby.png',
  'sector:AGRO':'art/sector-AGRO.png',
  'sector:AUTO':'art/sector-AUTO.png',
  'sector:BANK':'art/sector-BANK.png',

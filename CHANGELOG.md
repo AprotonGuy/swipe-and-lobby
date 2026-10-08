@@ -6,6 +6,7 @@
 - Arthur Promptier heet nu **A.R.T.H.U.R. Promptier** (*Automated Regulatory Talking Head, Unsupervised Release*): een AI die zich voordoet als mens. Zijn rol is nu "Founder, AI start-up (100% human)", met een nieuwe grap en een verzoek dat eindigt op "Beep. Sorry. Hiccup." Dat geldt voor beide dossiers ("Let us regulate AI ourselves" en "Stop the clock").
 
 **Nieuw**
+- Nieuwe portretten: Megan Cookiesworth, Sophie Royaltée en Steve Appleby (voorheen Daniel Appleby).
 - 2 vervolgkaarten voor Arthur. Wijs je hem af, dan moet hij toegeven dat hij een AI is en vraagt hij om een piepklein label ("A very small label"). Keur je hem goed, dan komt hij terug als **Arthur 2.0**, met snor.
 
 ## v0.5.1 demo (8 oktober 2026)
