@@ -1,5 +1,10 @@
 # Swipe & Lobby — changelog
 
+## v0.3.3 demo (8 oktober 2026)
+
+**Opgelost**
+- Op dag 1 kwamen soms dossiers waarin de EU in het echt een compromis koos, terwijl de compromisknop pas op dag 2 vrijkomt. Die dossiers komen nu pas vanaf dag 2.
+
 ## v0.3.2 demo (8 oktober 2026)
 
 **Opgelost**

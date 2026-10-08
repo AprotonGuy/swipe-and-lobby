@@ -621,7 +621,7 @@ FOLLOW.forEach(f=>{f.follow=true;CARDS.push(f)});
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function start(){
   S={eco:50,clim:50,trust:50,corp:50};
-  deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual)); idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
+  deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual)); {const n=PER_DAY*(UNLOCK.compromise-1);for(let i=0;i<n&&i<deck.length;i++){if(CARDS[deck[i]].eu==='M'){const j=deck.findIndex((k,x)=>x>=n&&CARDS[k].eu!=='M');if(j>-1)[deck[i],deck[j]]=[deck[j],deck[i]];}}} idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
   {PX.body=[];if(bodyName()){const seen=new Set();shuffle(deck.slice(2)).forEach(k=>{const c=CARDS[k];if(PX.body.length<BODY_VISITS&&!c.char&&!seen.has(c.sector)){seen.add(c.sector);PX.body.push(c.id);}});}}
   renderStats(); stage.innerHTML=''; $('.rcwrap').hidden=true; if(typeof updateSecTab==='function'){closeSecrets();updateSecTab();} title();
 }
@@ -1303,7 +1303,7 @@ function decide(dir,deal){if(tipModal()){const t=$('#top');if(t){t.classList.add
     else setTimeout(()=>toastText(['🕯️ Somewhere in the archive, a candle lights itself.','🖼️ The portrait in the hall seems to smile. It didn’t before.','✍️ Your hand still tingles from the red ink.'][c.ritual-1]),900);}
   dayLog.push({c,dir,dd,deal});
   const fu=FOLLOW.find(f=>f.parent===c.title&&f.on===dir);
-  if(fu){const at=Math.min(deck.length,idx+1+2+Math.floor(Math.random()*3));deck.splice(at,0,CARDS.indexOf(fu));}
+  if(fu){let at=Math.min(deck.length,idx+1+2+Math.floor(Math.random()*3));if(fu.eu==='M')at=Math.min(deck.length,Math.max(at,PER_DAY*(UNLOCK.compromise-1)));deck.splice(at,0,CARDS.indexOf(fu));}
   idx++;updateStats();setSheet(false);
   setTimeout(()=>flow({c,dir,dd,ip}),300);
 }
