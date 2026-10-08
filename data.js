@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.3.1 demo';
+const GAME_VERSION='v0.3.2 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].

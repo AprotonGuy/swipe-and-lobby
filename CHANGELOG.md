@@ -1,5 +1,10 @@
 # Swipe & Lobby — changelog
 
+## v0.3.2 demo (8 oktober 2026)
+
+**Opgelost**
+- Swipen op de pc (en soms op de telefoon) mislukte als Gerard precies tijdens het slepen een tip liet zien: de kaart bleef scheef hangen. Tips wachten nu tot je klaar bent met slepen, en een geblokkeerde kaart veert altijd terug.
+
 ## v0.3.1 demo (8 oktober 2026)
 
 **Opgelost**
