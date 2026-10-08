@@ -1,5 +1,10 @@
 # Swipe & Lobby — changelog
 
+## v0.5.1 demo (8 oktober 2026)
+
+**Opgelost**
+- Op de telefoon zoomde het scherm uit bij de avondkrant, waardoor de krant scheef stond en het spel piepklein werd. De weggeswipete kaart telt nu niet meer mee voor de breedte van de pagina.
+
 ## v0.5 demo (8 oktober 2026)
 
 **Nieuw**
