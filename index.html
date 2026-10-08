@@ -1,0 +1,1713 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Swipe & Lobby: a satirical game about real EU lobby dossiers. Approve or reject, keep the bars in balance, and find the secret endings.">
+<meta name="theme-color" content="#2a1f27">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Swipe &amp; Lobby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=UnifrakturMaguntia&family=Playfair+Display:wght@900&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one phone-height column — stat ledger on top, a dossier card in the middle, swipe hints below. Committed single dark theme (night session in the Berlaymont). */
+:root{
+  /* palette: retro plum / teal / brick (user supplied) */
+  --night:#392b35;        /* page ground, plum */
+  --night-2:#423952;      /* raised panels, violet */
+  --rule:#5a4e6a;
+  --slate:#444760;
+  --wine:#713f52;
+  --paper:#d1bfb0;        /* card stock */
+  --paper-2:#e2d4c6;      /* lighter paper for slips and bubbles */
+  --paper-ink:#392b35;
+  --text:#eadfd4;         /* text on the dark ground */
+  --muted:#a9b9b4;
+  --star:#7a9c96;         /* accent: sea-glass teal */
+  --approve:#486b7f;      /* stamp ink blue */
+  --reject:#bb474f;       /* stamp ink brick red */
+  --up:#7a9c96; --down:#d0636a;
+  --grain:none; /* replaced at load by a pre-rendered noise tile (cheap on phones) */
+  --f-display:"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-type:"Courier Prime", "Courier New", ui-monospace, monospace;
+  --f-easy:"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--night);color:var(--text);font-family:var(--f-body);margin:0;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.app{height:100%;max-width:460px;margin:0 auto;display:flex;flex-direction:column;padding-inline:16px;box-sizing:border-box}
+
+/* stat ledger */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding-block:14px 10px}
+.stat{display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.stat .ico{font-size:22px;line-height:1;transition:transform .2s}
+.bar{width:100%;height:8px;border-radius:4px;background:var(--night-2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--rule)}
+.bar i{display:block;height:100%;background:var(--paper);border-radius:4px;transition:width .5s cubic-bezier(.2,.8,.2,1),background .3s}
+.stat.low .bar i,.stat.high .bar i{background:var(--reject)}
+.stat.danger .bar{animation:dangerblink 1s ease-in-out infinite}
+@keyframes dangerblink{50%{box-shadow:0 0 0 2px var(--reject),0 0 12px var(--reject)}}
+#gerard{position:fixed;left:50%;transform:translateX(-50%);z-index:60;width:min(420px,calc(100% - 24px));display:flex;gap:10px;align-items:flex-start;background:linear-gradient(180deg,rgba(233,238,240,.97),rgba(214,224,228,.97));color:#26303a;border-radius:14px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 24px rgba(200,225,235,.35);animation:rise .3s ease-out}
+#gshade{position:fixed;inset:0;z-index:59;background:rgba(12,16,22,.38);touch-action:none}
+body:has(#warn:not([hidden])) #gshade{background:rgba(12,6,8,.62)}
+#gerard.nudge{animation:gnudge .35s}
+@keyframes gnudge{0%,100%{translate:0}25%{translate:-6px}75%{translate:6px}}
+#gerard.bottom{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.gerard.mid{top:50%;transform:translate(-50%,-50%)}
+#gerard.mid{top:40%}
+#gerard.top{top:calc(146px + env(safe-area-inset-top,0px))}
+#gerard svg{width:52px;height:52px;flex:none;border-radius:50%;background:rgba(122,156,150,.25);animation:gfloat 3s ease-in-out infinite}
+@keyframes gfloat{50%{transform:translateY(-4px)}}
+#gerard.intro{animation:materialize 1.4s ease-out}
+@keyframes materialize{0%{opacity:0;filter:blur(8px);transform:translateX(-50%) translateY(10px) scale(.92)}60%{opacity:.6;filter:blur(2px)}100%{opacity:1;filter:none;transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){#gerard.intro{animation:none}}
+#gerard b{display:block;font:700 10px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:#486b7f;margin-bottom:3px}
+#gerard p{margin:0;font:500 14px/1.4 var(--f-body)}
+#gerard .gbtn{display:flex;gap:8px;margin-top:8px;align-items:center}
+#gerard button{appearance:none;border:0;background:#26303a;color:#e9eef0;border-radius:6px;padding:7px 12px;font:600 12.5px/1 var(--f-body);cursor:pointer}
+#gerard button.ghostly{background:none;color:#486b7f;text-decoration:underline;padding:7px 4px}
+#warn{box-sizing:border-box;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100% - 32px));display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;background:var(--grain),var(--paper-2);color:var(--paper-ink);border-radius:14px;padding:18px 18px 16px;box-shadow:0 18px 50px rgba(0,0,0,.6),0 0 0 3px var(--reject),0 0 40px rgba(214,69,65,.45);animation:warnIn .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes warnIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+#warn.nudge{animation:gnudge .35s}
+#warn svg,#warn img{width:96px;height:96px;flex:none;border-radius:50%;box-shadow:0 0 0 3px var(--reject)}
+#warn .wk{font:700 11px/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--reject)}
+#warn h3{margin:0;font:800 22px/1.15 var(--f-body);color:var(--paper-ink)}
+#warn .wv{font:700 13px/1 var(--f-mono);color:#fff;background:var(--reject);border-radius:999px;padding:5px 10px}
+#warn .wq{font:italic 500 16px/1.4 var(--f-body);margin:2px 0 4px}
+#warn .wn{font:600 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+#warn button{appearance:none;border:0;background:var(--reject);color:#fff;border-radius:8px;padding:11px 26px;font:700 15px/1 var(--f-body);cursor:pointer;margin-top:4px}
+#warn button:focus-visible{outline:3px solid var(--paper-ink);outline-offset:2px}
+.stat .lbl{font:500 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.stat .pct{font:500 11px/1 var(--f-mono);font-variant-numeric:tabular-nums;color:var(--text)}
+.stat .hint{position:absolute;top:-4px;right:calc(50% - 22px);width:0;height:0;border-radius:50%;transition:all .15s}
+.stat.up .ico{transform:translateY(-2px)}
+.stat.down .ico{transform:translateY(2px)}
+.stat.up .hint{background:var(--up);box-shadow:0 0 10px var(--up)}
+.stat.down .hint{background:var(--down);box-shadow:0 0 10px var(--down)}
+.stat.s .hint{width:6px;height:6px}.stat.m .hint{width:9px;height:9px}.stat.l .hint{width:12px;height:12px}
+
+.meta{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);padding-top:8px;font:500 11px/1.2 var(--f-mono);color:var(--muted);letter-spacing:.04em}
+.meta b{color:var(--star);font-weight:500}
+
+/* card stage */
+.stage{flex:1;position:relative;display:grid;place-items:center;perspective:900px;min-height:0}
+.card{position:absolute;width:min(330px,100%);max-height:100%;min-height:min(440px,100%);background:var(--grain),radial-gradient(120% 90% at 30% 15%,rgba(255,250,240,.45),transparent 60%),linear-gradient(170deg,#d8c7b8,var(--paper) 55%,#c4b09f);
+  color:var(--paper-ink);border-radius:4px 4px 3px 5px;
+  box-shadow:0 1px 1px rgba(30,20,26,.35),0 6px 10px rgba(30,20,26,.25),0 22px 40px rgba(20,12,18,.45),inset 0 0 0 1px rgba(255,248,240,.35),inset 0 0 24px rgba(113,63,82,.12);display:flex;flex-direction:column;overflow:hidden;
+  touch-action:none;cursor:grab;will-change:transform;contain:layout paint;-webkit-user-select:none}
+.card.back{transform:translate(6px,10px) rotate(2.4deg) scale(.96);cursor:default;will-change:auto}
+.card.back>*:not(.stamp){opacity:.55}
+.card.back .stamp{display:none}
+.card.back2{transform:translate(-8px,14px) rotate(-3deg) scale(.94);background:#a9988b}
+.card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(57,43,53,.28);outline:1px solid rgba(57,43,53,.12);outline-offset:3px;border-radius:2px;pointer-events:none}
+.card::after{content:"";position:absolute;right:0;bottom:0;width:26px;height:26px;pointer-events:none;
+  background:linear-gradient(135deg,var(--paper-2) 0 48%,rgba(57,43,53,.25) 50%,var(--night) 52%);box-shadow:-2px -2px 4px rgba(30,20,26,.15)}
+.fold{position:absolute;left:0;right:0;top:46%;height:1px;background:linear-gradient(90deg,transparent,rgba(57,43,53,.12) 15%,rgba(255,248,240,.5) 50%,rgba(57,43,53,.12) 85%,transparent);pointer-events:none}
+.card.dragging{cursor:grabbing}
+.card.anim{transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s}
+.card .head{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 14px 0}
+.dossier{font:500 10px/1.35 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+.dossier strong{display:block;color:var(--paper-ink);font-size:11px}
+.badge{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;text-align:center;background:var(--sc)!important;color:#141014;
+  border:2.5px solid var(--sc);box-shadow:inset 0 0 0 2px rgba(255,255,255,.85),0 2px 6px rgba(0,0,0,.25);transform:rotate(-9deg);
+  font:800 8.5px/1 var(--f-display);letter-spacing:.04em;text-shadow:none}
+.badge span{display:block;font-size:24px;line-height:1;margin-bottom:2px;filter:grayscale(1) brightness(0)}
+.badge.inv{color:#fff}.badge.inv span{filter:grayscale(1) brightness(0) invert(1)}
+
+.portrait{display:grid;place-items:center;padding:4px 0 2px}
+.portrait svg{width:min(118px,32vw);height:auto}
+.who{text-align:center;padding:0 16px}
+.who .name{font:600 14px/1.2 var(--f-body)}
+.who .role{font:400 12px/1.3 var(--f-body);color:var(--slate)}
+.body{padding:12px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0}
+.body h2{margin:0;font:800 24px/1.05 var(--f-display);letter-spacing:-.01em;text-wrap:balance}
+.body p{margin:0;font:400 17px/1.42 var(--f-body);overflow:auto}
+.body{position:relative}
+#top .body{padding-bottom:26px}
+#top .body{cursor:zoom-in}
+.body .zoom{position:absolute;right:44px;bottom:6px;font:600 10px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--slate);background:var(--paper);padding:4px 6px;border-radius:3px;border:1px solid rgba(57,43,53,.25);pointer-events:none}
+.card:not(#top) .body .zoom{display:none}
+.letter.readpop .modal{border-top:6px solid var(--sec,var(--reject))}
+.letter.nego .modal{border-top:6px solid #b08a2e}
+.nego .deals{display:grid;gap:8px;margin:12px 0 4px}
+.nego .deal{appearance:none;text-align:left;border:1.5px solid var(--paper-ink);background:rgba(255,255,255,.18);color:var(--paper-ink);border-radius:8px;padding:11px 12px;cursor:pointer;display:grid;gap:4px;font:inherit}
+.nego .deal:hover{background:rgba(255,255,255,.35)}
+.nego .deal b{font:700 15px/1.25 var(--f-body)}
+.nego .deal span.dd{font:400 13px/1.4 var(--f-body);color:var(--slate)}
+.nego .deal .deltas{margin:2px 0 0}
+.nego .deal:disabled{opacity:.35;cursor:default}
+.nego .deal .gh{font:600 11px/1 var(--f-mono);color:#3d6b65}
+.nego .deal.cursed{background:#5a1820;border-color:#2a0a0e;color:#f4d9d0}
+.nego .deal.cursed b{font:italic 700 17px/1.2 var(--f-display);color:#f2c94c}
+.nego .deal.cursed span.dd{color:#d9a9a0;text-decoration:line-through;text-decoration-color:rgba(242,201,76,.6);font-size:11px}
+.letter.nego.cursed .modal{border-top-color:#7a1f2b;background:var(--grain),linear-gradient(180deg,#d6b9ad,#c8a89b)}
+.nego .verdictbox{border-radius:8px;padding:12px;margin:10px 0;font:500 14px/1.45 var(--f-body)}
+.nego .verdictbox.yes{background:rgba(61,107,101,.18);border:1.5px solid #3d6b65}
+.nego .verdictbox.info{background:rgba(72,107,127,.12);border:1.5px solid #486b7f}
+.nego .ghostbtn{appearance:none;border:1.5px dashed var(--paper-ink);background:none;color:var(--paper-ink);border-radius:6px;padding:7px 10px;font:600 12.5px/1 var(--f-body);cursor:pointer}
+.readpop .rp-who{display:flex;gap:12px;align-items:center;margin:10px 0 4px}
+.readpop .rp-who svg,.readpop .rp-who img.art{width:56px;height:56px;flex:none;border-radius:50%}
+.readpop .rp-name{font:700 15px/1.2 var(--f-display)}
+.readpop .rp-role{font:400 13px/1.3 var(--f-body);color:var(--slate)}
+.readpop h3{font-size:26px!important;margin-top:8px}
+.readpop .rp-ask{font:400 20px/1.55 var(--f-body);margin:12px 0 16px;user-select:text}
+.readpop .rp-quip{font:italic 400 16px/1.45 var(--f-body);color:var(--slate);border-left:3px solid var(--sec,var(--slate));padding-left:10px;margin:8px 0 0}
+.stamp{position:absolute;top:36%;padding:6px 12px;border:4px solid currentColor;border-radius:6px;font:800 24px/1 var(--f-display);
+  letter-spacing:.08em;text-transform:uppercase;opacity:0;pointer-events:none;background:rgba(255,255,255,.08)}
+.stamp.ok{left:14px;color:var(--approve);transform:rotate(-14deg)}
+.stamp.no{right:14px;color:var(--reject);transform:rotate(12deg)}
+.stamp.mid{left:50%;top:22%;color:#b08a2e;transform:translateX(-50%) rotate(-4deg);white-space:nowrap}
+
+.app{position:relative}
+.rcwrap{position:relative;padding-top:10px}
+.rctab{width:100%;appearance:none;border:1px dashed var(--rule);background:transparent;color:var(--text);border-radius:10px;padding:10px 12px;
+  font:500 13px/1.2 var(--f-body);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rctab .k{font:500 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--star)}
+.rctab[aria-expanded="true"]{border-style:solid;border-color:var(--star)}
+.rctab:focus-visible{outline:2px solid var(--star);outline-offset:2px}
+.grab{width:42px;height:5px;border-radius:3px;background:rgba(57,43,53,.3);margin:-6px auto 10px;cursor:grab;touch-action:none}
+.sheet{overscroll-behavior:contain;position:absolute;left:0;right:0;bottom:calc(100% - 6px);z-index:5;max-height:min(48dvh,480px);overflow:auto;background:var(--grain),var(--paper);color:var(--paper-ink);
+  border-radius:4px;padding:16px 16px 12px;box-sizing:border-box;box-shadow:0 -12px 40px rgba(0,0,0,.5);
+  animation:rise .3s cubic-bezier(.2,.8,.2,1);user-select:text;-webkit-user-select:text}
+.sheet .kicker{font:500 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+.sheet h3{margin:6px 0 2px;font:800 20px/1.1 var(--f-display);text-wrap:balance}
+.spoil{font:400 12.5px/1.4 var(--f-body);color:var(--slate);margin:2px 0 8px}
+.sheet .spoil{font:400 12px/1.4 var(--f-body);color:var(--slate);margin:2px 0 8px}
+.toast{position:absolute;left:16px;right:16px;bottom:170px;z-index:6;background:var(--grain),var(--paper-2);color:var(--paper-ink);border-radius:12px;padding:10px 12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:6px;animation:drop 2.6s ease forwards;pointer-events:none}
+.toast .verdict{margin:0}
+@keyframes drop{0%{opacity:0;transform:translateY(-10px)}10%,80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-6px)}}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-block:10px 14px}
+.choices .m{display:none}
+body.hasM .choices{grid-template-columns:1fr auto 1fr}
+body.hasM .choices .m{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-color:#b08a2e;padding-inline:12px}
+.choices .m small{font:500 9.5px/1 var(--f-mono);letter-spacing:.04em;color:var(--muted)}
+.choices .m:disabled{opacity:.4}
+.card.promisedM .stamp.ok,.card.promisedM .stamp.no,.card.promisedR .stamp.mid,.card.promisedL .stamp.mid{display:none}
+.shop .extra{border-top:1px dotted rgba(57,43,53,.35);margin-top:8px;padding-top:8px}
+.choices button{appearance:none;border:1px solid var(--rule);background:var(--night-2);color:var(--text);border-radius:10px;padding:11px 8px;
+  font:600 13px/1.2 var(--f-body);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.choices button:focus-visible,.modal button:focus-visible{outline:2px solid var(--star);outline-offset:2px}
+.choices .l{border-color:color-mix(in srgb,var(--reject) 55%,var(--rule))}
+.choices .r{border-color:color-mix(in srgb,var(--approve) 65%,var(--rule))}
+.foot{font:500 10px/1.4 var(--f-mono);color:var(--muted);text-align:center;padding-bottom:10px;letter-spacing:.03em}
+.foot a{color:var(--muted)}
+
+/* overlays */
+.veil{position:fixed;inset:0;background:rgba(28,20,26,.82);display:grid;place-items:end center;z-index:10;padding:16px;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.modal{width:min(460px,100%);max-height:calc(100% - 20px);overflow:auto;background:var(--grain),var(--paper);color:var(--paper-ink);border-radius:4px;
+  padding:20px 18px 18px;box-sizing:border-box;animation:rise .35s cubic-bezier(.2,.8,.2,1);user-select:text;-webkit-user-select:text}
+@keyframes rise{from{transform:translateY(40px);opacity:0}}
+.modal .kicker{font:500 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+.modal h3{margin:6px 0 4px;font:800 22px/1.1 var(--f-display);text-wrap:balance}
+.verdict{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+.chip{font:600 11px/1 var(--f-body);padding:6px 9px;border-radius:999px;border:1.5px solid currentColor}
+.chip.ok{color:var(--approve)}.chip.no{color:var(--reject)}.chip.mix{color:var(--wine)}
+.chip.match{background:var(--paper-ink);color:var(--paper);border-color:var(--paper-ink)}
+.block{padding:10px 0;border-top:1px solid rgba(57,43,53,.22)}
+.society{background:rgba(122,156,150,.18);border-top:0;border-left:3px solid var(--star);padding:10px 12px;margin:6px 0;border-radius:2px}
+.news .modal{background:var(--grain),linear-gradient(180deg,#e9e0d3,#ddd1c2);color:#231a20;border-radius:1px;padding:14px 14px 12px;
+  transform:rotate(-.7deg);box-shadow:0 2px 2px rgba(0,0,0,.25),0 24px 50px rgba(0,0,0,.5);--np-serif:"Libre Caslon Text",Georgia,"Times New Roman",serif;--np-head:"Playfair Display",Georgia,serif}
+.news .np-top{display:flex;justify-content:space-between;gap:8px;font:400 9px/1.2 var(--np-serif);font-style:italic}
+.news .np-name{font:400 clamp(30px,9.5vw,42px)/1.05 "UnifrakturMaguntia","Old English Text MT",serif;text-align:center;margin:2px 0 4px}
+.news .np-bar{display:flex;justify-content:space-between;gap:6px;border-top:3px double #231a20;border-bottom:1px solid #231a20;padding:4px 0 3px;
+  font:700 9px/1.2 var(--np-serif);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.news .np-kick{font:700 10px/1 var(--np-serif);letter-spacing:.16em;text-transform:uppercase;color:var(--reject);text-align:center}
+.news .np-head{font:900 clamp(25px,7.6vw,33px)/1.02 var(--np-head);text-align:center;margin:6px 0 6px;text-wrap:balance;letter-spacing:-.01em}
+.news .np-sub{font:italic 400 13px/1.35 var(--np-serif);text-align:center;border-bottom:1px solid rgba(35,26,32,.45);padding-bottom:9px;margin-bottom:10px;text-wrap:balance}
+.np-body{display:grid;grid-template-columns:42% 1fr;gap:12px;align-items:start}
+.np-body>*{min-width:0}
+.np-photo{position:relative;filter:grayscale(1) contrast(1.2) brightness(1.05);background:#cbbfb2;border:1px solid #231a20;aspect-ratio:1;overflow:hidden}
+.np-photo svg{width:100%;height:100%;display:block}
+.np-photo::after{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(35,26,32,.4) .8px,transparent 1.3px) 0 0/3.4px 3.4px;mix-blend-mode:multiply}
+.news .np-cap{font:italic 400 10.5px/1.3 var(--np-serif);margin-top:4px}
+.news .np-text{font:400 12.5px/1.45 var(--np-serif);text-align:left;hyphens:auto;-webkit-hyphens:auto}
+.news .np-text p{margin:0 0 7px;font:400 14px/1.45 var(--np-serif)}
+.letter.news .modal{border-top:0}
+.news .np-text p:first-child::first-letter{float:left;font:900 40px/.82 var(--np-head);margin:3px 5px 0 0}
+.news .np-box{border:1px solid #231a20;padding:6px 8px;margin-top:9px;font:400 11px/1.4 var(--np-serif)}
+.np-box b{display:block;font:700 9px/1.2 var(--np-serif);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.np-box .deltas{margin:2px 0 0;font-size:11px;gap:6px}
+.news .np-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;font:italic 400 11px/1 var(--np-serif)}
+.news .np-nav button{appearance:none;border:1px solid #231a20;background:transparent;color:#231a20;border-radius:3px;padding:7px 10px;font:700 11px/1 var(--np-serif);cursor:pointer}
+.news .np-nav button:disabled{visibility:hidden}
+.news .np-infl{margin-top:6px;padding-top:5px;border-top:1px dotted #231a20;font:400 11px/1.35 var(--np-serif)}
+.news .np-infl span{opacity:.8}
+.news .np-index{border:1px solid #231a20;padding:6px 8px;margin-top:9px;font:400 11px/1.4 var(--np-serif)}
+.news .np-index b{display:block;font:700 9px/1.2 var(--np-serif);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.news .np-index div{display:flex;justify-content:space-between;gap:6px}
+.news .np-text .yours{border-left:3px solid var(--reject);padding-left:7px}
+.news .np-text p.yours::first-letter{float:none;font:inherit;margin:0}
+.news .np-text p.real{background:none;margin:0 0 7px;padding:0 0 0 7px;border-left:3px solid var(--approve);font:400 14px/1.45 var(--np-serif)}
+.news .np-text p.real::first-letter{float:none;font:inherit;margin:0}
+.news .np-foot{border-top:3px double #231a20;margin-top:10px;padding-top:5px;font:italic 400 10.5px/1.3 var(--np-serif);display:flex;justify-content:space-between;gap:10px}
+.news .next{background:#231a20;color:#e9e0d3;font-family:var(--f-body)}
+.gate{width:min(330px,100%);display:grid;place-items:center}
+.agenda{width:100%;box-sizing:border-box;background:var(--grain),var(--paper-2);color:var(--paper-ink);border-radius:3px;padding:18px 18px 16px;transform:rotate(-1.2deg);
+  box-shadow:0 2px 2px rgba(20,12,18,.3),0 18px 36px rgba(20,12,18,.45);background-image:var(--grain),repeating-linear-gradient(transparent 0 25px,rgba(72,107,127,.18) 25px 26px);animation:rise .4s cubic-bezier(.2,.8,.2,1)}
+.ag-kick{font:500 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--wine)}
+.ag-day{font:800 30px/1.1 var(--f-display);margin:4px 0 8px}
+.agenda ol{list-style:none;margin:0 0 10px;padding:0}
+.agenda li{display:flex;gap:12px;padding:5px 0;border-bottom:1px dashed rgba(57,43,53,.3);font:400 14px/1.3 var(--f-body)}
+.agenda li span:first-child{font:500 13px/1.3 var(--f-mono);font-variant-numeric:tabular-nums;color:var(--approve)}
+.agenda .who{display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-width:0}
+.agenda .who b{font-weight:600}
+.agenda .who i{color:var(--slate);font-size:12.5px}
+.agenda .sec{font:italic 400 13px/1.4 var(--f-body);margin:8px 0 12px}
+.agenda .sec b{font-style:normal}
+.agenda .next{width:100%;appearance:none;border:0;border-radius:8px;padding:14px;background:var(--paper-ink);color:var(--paper-2);font:700 15px/1 var(--f-body);cursor:pointer}
+.agenda .next:focus-visible{outline:2px solid var(--star);outline-offset:2px}
+.gated .choices,.gated .foot{display:none}
+.gated .stage{overflow-y:auto;overscroll-behavior:contain;place-items:start center;padding:8px 0 16px}
+.agenda .who{flex:1;min-width:0}
+.agenda .who b,.agenda .who i{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.deal{animation:deal .55s cubic-bezier(.2,.8,.2,1) .25s backwards}
+.card.back.deal-b{animation:deal .55s cubic-bezier(.2,.8,.2,1) .12s backwards}
+.card.back2.deal-b{animation-delay:0s}
+@keyframes deal{from{transform:translateY(110%) rotate(9deg);opacity:0}}
+.dossier .fu{color:var(--reject)}
+.portrait img.art{width:min(118px,32vw);aspect-ratio:1;border-radius:50%;object-fit:cover;display:block}
+.np-photo img.art{width:100%;height:100%;object-fit:cover;display:block}
+.char img.art{width:84px;height:84px;flex:none;border-radius:50%;object-fit:cover}
+.gear{appearance:none;border:0;background:none;color:var(--muted);font-size:15px;line-height:1;padding:0 8px 0 0;cursor:pointer}
+.gear:focus-visible{outline:2px solid var(--star);outline-offset:2px}
+#ovl:empty{display:none}
+#ovl .veil{z-index:20}
+.veil.title-bg{background:radial-gradient(120% 80% at 50% 0%,#4a3a48,var(--night) 70%)}
+.title{place-items:center;background:radial-gradient(120% 80% at 50% 0%,#4a3a48,var(--night) 70%)}
+.ag-new{border:1.5px dashed #b08a2e;border-radius:6px;padding:8px 10px;margin:8px 0;text-align:left}
+.ag-new>b{display:block;font:700 10px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#8a6a1e;margin-bottom:2px}
+.ag-new p{margin:3px 0;font:400 12.5px/1.35 var(--f-body)}
+.ag-new{margin:6px 0 10px!important;padding:6px 9px!important}
+.gwelcome{background:radial-gradient(70% 50% at 50% 30%,rgba(122,156,150,.35),transparent 70%),radial-gradient(120% 80% at 50% 0%,#4a3a48,var(--night) 70%);place-items:center}
+.gw{width:min(420px,100%);text-align:center;color:#26303a;background:linear-gradient(180deg,rgba(236,241,243,.97),rgba(212,223,228,.97));border-radius:18px;padding:16px 18px 14px;box-shadow:0 0 50px rgba(200,225,235,.35),0 20px 50px rgba(0,0,0,.5);animation:materialize2 1.6s ease-out}
+@keyframes materialize2{0%{opacity:0;filter:blur(10px);transform:translateY(14px) scale(.9)}60%{opacity:.65;filter:blur(2px)}100%{opacity:1;filter:none;transform:none}}
+.gw-ghost{width:96px;height:96px;margin:-58px auto 4px;border-radius:50%;background:rgba(122,156,150,.3);box-shadow:0 0 30px rgba(220,240,245,.6);animation:gfloat 3s ease-in-out infinite}
+.gw-ghost svg{width:100%;height:100%}
+.gw-kick{font:700 10.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#486b7f}
+.gw h3{margin:4px 0 2px;font:800 30px/1 var(--f-display);color:#26303a}
+.gw p{text-align:left;font:400 15px/1.5 var(--f-body);margin:8px 0}
+.gw .next{display:block;width:100%;appearance:none;border:0;background:#26303a;color:#e9eef0;margin-top:10px;padding:14px;border-radius:10px;font:700 16px/1 var(--f-body);cursor:pointer}
+.gw-skip{appearance:none;border:0;background:none;color:#486b7f;text-decoration:underline;font:500 12.5px/1 var(--f-body);margin-top:10px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.gw,.gw-ghost{animation:none}}
+.t-edits{text-align:center;font:500 12.5px/1.6 var(--f-mono);color:var(--muted)}.t-edits small{font-size:10.5px}
+.t-edit{font:500 12.5px/1.3 var(--f-mono);color:var(--star);text-decoration:underline}
+body:not(.practice) .meta .prac{display:none}body.practice .meta .mtg{display:none}.meta .prac{color:var(--star)}
+.howto .modal{text-align:center}
+.howto .ht-ico{font-size:44px;line-height:1;margin:8px 0 2px}
+.howto p{text-align:left;font:400 15px/1.5 var(--f-body);margin:8px 0}
+.howto .ht-warn{background:rgba(187,71,79,.12);border-left:3px solid var(--reject);padding:6px 9px;border-radius:3px}
+.howto .ht-red{border-bottom:3px solid var(--reject);font-weight:700}.howto .ht-blue{border-bottom:3px solid var(--approve);font-weight:700}
+.howto .ht-swipe{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:12px 0 4px;font:700 13px/1 var(--f-body)}
+.howto .ht-swipe .l{color:var(--reject)}.howto .ht-swipe .r{color:var(--approve)}
+.howto .ht-swipe .c{width:34px;height:46px;border-radius:3px;background:var(--grain),var(--paper-2);box-shadow:0 0 0 1.5px rgba(57,43,53,.35),0 4px 8px rgba(0,0,0,.2);animation:htwiggle 2.4s ease-in-out infinite}
+@keyframes htwiggle{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-26px) rotate(-12deg)}75%{transform:translateX(26px) rotate(12deg)}}
+.howto .ht-dots{display:flex;justify-content:center;gap:6px;margin:12px 0 10px}
+.howto .ht-dots i{width:7px;height:7px;border-radius:50%;background:rgba(57,43,53,.25)}.howto .ht-dots i.on{background:var(--paper-ink)}
+.howto .ht-nav{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center}
+.howto .ht-nav .next{margin:0}
+.howto #ht-prev{appearance:none;border:1.5px solid var(--paper-ink);background:none;color:var(--paper-ink);border-radius:8px;padding:12px 12px;font:600 14px/1 var(--f-body);cursor:pointer}
+.howto #ht-prev:disabled{opacity:.3;cursor:default}
+.howto .ht-skip{appearance:none;border:0;background:none;color:var(--slate);font:500 12px/1 var(--f-body);margin-top:10px;cursor:pointer;text-decoration:underline;min-height:12px}
+.title .tbox{width:min(400px,100%);text-align:center;display:grid;gap:14px;justify-items:center}
+.title .deco{position:relative;width:150px;height:120px;margin-bottom:4px}
+.title .deco i{position:absolute;inset:0 22px;border-radius:4px;background:var(--grain),var(--paper);box-shadow:0 10px 24px rgba(0,0,0,.4)}
+.title .deco i:nth-child(1){transform:rotate(-9deg) translate(-14px,6px);filter:brightness(.8)}
+.title .deco i:nth-child(2){transform:rotate(7deg) translate(14px,4px);filter:brightness(.9)}
+.title .deco i:nth-child(3){display:grid;place-items:center}
+.title .deco b{font:800 13px/1 var(--f-display);letter-spacing:.14em;color:var(--approve);border:2.5px solid currentColor;padding:5px 8px;border-radius:4px;transform:rotate(-12deg)}
+.title h1{margin:0;font:800 clamp(40px,12vw,58px)/.95 var(--f-display);letter-spacing:-.02em;color:var(--paper-2);text-wrap:balance}
+.title h1 span{color:var(--reject)}
+.title .tag{margin:0;font:italic 400 15px/1.4 var(--f-body);color:var(--muted);max-width:30ch}
+.title .menu{display:grid;gap:10px;width:100%;margin-top:8px}
+.title .menu button{appearance:none;border:1px solid var(--rule);background:var(--night-2);color:var(--text);border-radius:12px;padding:14px;font:600 16px/1 var(--f-body);cursor:pointer}
+.title .menu button.primary{background:var(--paper);color:var(--paper-ink);border-color:var(--paper);font-size:18px;padding:17px}
+.title .menu button:focus-visible{outline:2px solid var(--star);outline-offset:2px}
+.title .credit .ver{opacity:.6;letter-spacing:.08em}
+.title .credit{font:500 11px/1.5 var(--f-mono);color:var(--muted);letter-spacing:.04em;margin-top:6px}
+.set .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid rgba(57,43,53,.2)}
+.set .row b{font:600 15px/1.2 var(--f-body)}
+.set .row small{display:block;font:400 12px/1.3 var(--f-body);color:var(--slate);margin-top:2px}
+.tog{appearance:none;width:52px;height:30px;border-radius:15px;border:0;background:#b8a899;position:relative;cursor:pointer;flex:none}
+.tog::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.tog[aria-checked="true"]{background:var(--approve)}
+.tog[aria-checked="true"]::after{transform:translateX(22px)}
+.tog:focus-visible,.fontopt:focus-visible{outline:2px solid var(--approve);outline-offset:2px}
+.fonts{display:grid;gap:8px;padding:12px 0;border-top:1px solid rgba(57,43,53,.2)}
+.fontopt{appearance:none;text-align:left;border:1.5px solid rgba(57,43,53,.3);background:transparent;border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--paper-ink)}
+.fontopt[aria-checked="true"]{border-color:var(--paper-ink);background:rgba(255,248,240,.4)}
+.fontopt b{display:block;font-size:17px;margin-bottom:2px}
+.fontopt span{font-size:13px;color:var(--slate)}
+.info h4{margin:12px 0 4px;font:700 14px/1.2 var(--f-body)}
+.info p,.info li{font:400 14px/1.5 var(--f-body);margin:0}
+.info ul{margin:4px 0;padding-left:18px}
+.info a{color:var(--approve)}
+.badge img.sg{width:26px;height:26px;object-fit:contain;display:block;margin:0 auto 2px}
+.title .tart{width:min(320px,80%);max-height:220px;object-fit:contain;border-radius:8px}
+.purse{display:flex;justify-content:space-between;align-items:center;gap:8px;font:500 11.5px/1.2 var(--f-mono);color:var(--muted);padding-top:5px;min-height:18px}
+.purse b{color:var(--paper-2);font-weight:500}
+.purse .heat{display:inline-flex;align-items:center;gap:5px}
+.purse .heat i{display:inline-block;width:42px;height:5px;border-radius:3px;background:var(--night-2);overflow:hidden;position:relative}
+.purse .heat i::after{content:"";position:absolute;inset:0;width:var(--h,0%);background:var(--reject);border-radius:3px}
+.purse .own{letter-spacing:2px}
+.purse .infl{margin-left:6px;color:var(--muted)}.purse .infl.hot{color:#e0a86a}
+.promise-tag{display:inline-block;margin-top:4px;font:700 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--reject);padding:4px 6px;border-radius:3px}
+.card.promisedR .stamp.no,.card.promisedL .stamp.ok{display:none}
+body.lockL #btnL,body.lockR #btnR{opacity:.35;text-decoration:line-through}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.card.shake{animation:shake .35s}
+.shopbtn{appearance:none;width:100%;margin-top:8px;border:1.5px solid var(--paper-ink);background:transparent;color:var(--paper-ink);border-radius:8px;padding:11px;font:600 14px/1 var(--f-body);cursor:pointer}
+.shopbtn:focus-visible{outline:2px solid var(--approve);outline-offset:2px}
+.shop .money{font:500 13px/1.3 var(--f-mono);margin:4px 0 6px}
+.shop .item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid rgba(57,43,53,.2)}
+.shop .item .ic{font-size:30px;line-height:1;text-align:center}
+.shop .item .ic img{width:40px;height:40px;object-fit:contain}
+.shop .item b{display:block;font:700 14.5px/1.2 var(--f-body)}
+.shop .item small{display:block;font:400 12.5px/1.35 var(--f-body);color:var(--slate)}
+.shop .item small em{font-style:normal;color:var(--reject)}
+.shop .buy{appearance:none;border:0;border-radius:8px;padding:9px 11px;background:var(--paper-ink);color:var(--paper-2);font:600 13px/1 var(--f-body);cursor:pointer;white-space:nowrap}
+.shop .buy:disabled{opacity:.4;cursor:not-allowed}
+.shop .owned{font:600 12px/1 var(--f-body);color:var(--up)}
+.cashchip{display:inline-block;margin-top:4px;font:600 12px/1 var(--f-mono)}
+.char{display:flex;gap:12px;align-items:center;margin:10px 0 4px}
+.char svg{width:84px;height:84px;flex:none;border-radius:50%;background:rgba(57,43,53,.06);box-shadow:inset 0 0 0 1.5px rgba(57,43,53,.25)}
+.char .nm{font:800 18px/1.1 var(--f-display)}
+.char .tg{font:500 10px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--wine);margin-top:3px}
+.char .hi{font:italic 400 13.5px/1.4 var(--f-body);margin-top:5px}
+.evt .from{font:500 11px/1.3 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--wine);margin-top:10px}
+.evt .offer{font:italic 500 15px/1.45 var(--f-body);margin:6px 0 8px}
+.evt .small{font:400 10px/1.35 var(--f-body);color:var(--slate);opacity:.8;border-top:1px dotted rgba(57,43,53,.35);padding-top:5px;margin-top:6px}
+.evt .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.evt .opts button{appearance:none;border:1.5px solid var(--paper-ink);border-radius:8px;padding:10px 8px;background:transparent;color:var(--paper-ink);font:700 13.5px/1.2 var(--f-body);cursor:pointer;display:flex;flex-direction:column;gap:5px;align-items:center}
+.evt .opts button.acc{background:var(--paper-ink);color:var(--paper)}
+.evt .opts .deltas{margin:0;justify-content:center}
+.evt .opts button.acc .p{color:#9cc6bf}.evt .opts button.acc .n{color:#f0a0a6}
+.pacts{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:5px;justify-content:flex-start;min-height:0;padding-top:5px}
+.pacts:empty{display:none}
+.pacts>:first-child{margin-left:auto}.pacts>:last-child{margin-right:auto}
+.pacts .pc{flex:none;white-space:nowrap;font:600 11px/1 var(--f-body);color:var(--paper-2);background:#2a1f28;border:1px solid #6a4a5e;border-radius:999px;padding:5px 9px;display:inline-flex;gap:5px;align-items:center}
+.pacts .pc.soon{opacity:.6;border-style:dashed}
+.pacts button.pc{cursor:pointer;background:#4a2f40;border-color:#c9a24a;color:#f4ead8}
+.pacts button.pc:disabled{opacity:.4;cursor:default}
+.pacts button.pc:focus-visible{outline:2px solid var(--star,#c9a24a);outline-offset:2px}
+.pacts .pc b{font:700 10px/1 var(--f-mono);background:#c9a24a;color:#2a1f28;border-radius:999px;padding:2px 5px}
+.stat.num .hint{width:auto!important;height:auto!important;border-radius:3px;padding:2px 4px;top:-10px;font:700 10px/1 var(--f-mono);color:#fff;right:calc(50% - 30px)}
+.veil.night{background:radial-gradient(90% 70% at 50% 30%,rgba(90,40,50,.55),rgba(14,9,13,.94) 70%)}
+.letter.night .modal,.night .modal{background:radial-gradient(120% 70% at 50% 0%,#3a2632,#1f161d 75%);color:#eadfd4;border-top:6px solid #c9a24a;box-shadow:0 0 60px rgba(201,162,74,.18)}
+.night .modal .kicker{color:#c9a24a}
+.night .char svg{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1.5px rgba(201,162,74,.5),0 0 22px rgba(201,162,74,.25)}
+.night .char .tg,.night .evt .from,.night.evt .from{color:#c9a24a}
+.night .evt .small,.night .small{color:#cdbfc6;border-top-color:rgba(234,223,212,.25)}
+.night .terms{display:grid;gap:6px;margin:10px 0 2px;font:500 13.5px/1.4 var(--f-body)}
+.night .terms div{display:grid;grid-template-columns:22px 1fr;gap:4px}
+.night .evt .opts button,.night .opts button{border-color:#eadfd4;color:#eadfd4}
+.night .evt .opts button.acc,.night .opts button.acc{background:#c9a24a;color:#1f161d;border-color:#c9a24a}
+.night .pickbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.night .pickbar button{appearance:none;border:1.5px solid #c9a24a;background:transparent;color:#eadfd4;border-radius:8px;padding:12px 8px;font:700 14px/1.2 var(--f-body);cursor:pointer}
+.night .pickbar button:hover{background:rgba(201,162,74,.15)}
+.promise-tag.pact{background:#5a3a4e}
+.day-sum{display:flex;flex-wrap:wrap;gap:6px 12px;font:500 13px/1 var(--f-mono);font-variant-numeric:tabular-nums;margin:8px 0}
+.day-sum .p{color:#3d6b65}.day-sum .n{color:#a63a44}
+.paper-news .modal{text-align:left}
+.masthead{font:800 13px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;text-align:center;border-top:3px double var(--paper-ink);border-bottom:3px double var(--paper-ink);padding:7px 0;margin-bottom:10px}
+.masthead small{display:block;font:500 9px/1.4 var(--f-mono);letter-spacing:.1em;margin-top:3px}
+.paper-news h3{font-size:24px}
+.real{background:rgba(122,156,150,.18);border-left:3px solid var(--star);padding:8px 10px;font:400 13px/1.45 var(--f-body);margin-top:10px}
+.real b{font-weight:600}
+.card.back .quip,.card.wait .quip{visibility:hidden;animation:none}
+.card .quip{position:absolute;top:10px;left:14px;right:14px;margin:0;z-index:3;box-shadow:0 6px 14px rgba(30,20,26,.25)}
+.card .quip::before{top:auto;bottom:-8px;border-bottom:0;border-top:8px solid var(--paper-ink)}
+.card .quip::after{top:auto;bottom:-5.5px;border-bottom:0;border-top:6.5px solid var(--paper-2)}
+.card .portrait{padding-top:4px}
+
+.card:not(.back) .quip{animation:pop .35s cubic-bezier(.3,1.5,.5,1) .15s both;transform-origin:50% 100%}
+@keyframes pop{from{opacity:0;transform:scale(.6) translateY(-6px)}}
+.typing::after{content:"▌";animation:blink .7s steps(1) infinite;margin-left:1px;font-style:normal}
+@keyframes blink{50%{opacity:0}}
+.news-item{padding:9px 0;border-top:1px solid rgba(57,43,53,.22);display:grid;gap:4px}
+.news-item .tag{font:500 9.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.news-item .tag.ok{color:var(--approve)}.news-item .tag.no{color:var(--reject)}
+.news-item h4{font:800 17px/1.15 var(--f-display)!important;margin:0;text-wrap:balance}
+.news-item .deltas{margin:0;font-size:11px}
+.lead{columns:1}
+.block h4{margin:0 0 4px;font:700 13px/1.2 var(--f-body)}
+.block p{margin:0;font:400 15.5px/1.5 var(--f-body)}
+.deltas{display:flex;gap:10px;flex-wrap:wrap;font:500 12px/1 var(--f-mono);font-variant-numeric:tabular-nums;margin:2px 0 4px}
+.deltas .p{color:#3d6b65}.deltas .n{color:#a63a44}
+.reg{font:500 9px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-left:4px}
+.lobby{margin-top:6px}
+.lobby a{font:700 13px/1.3 var(--f-body);color:var(--paper-ink)}
+.fig{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 4px}
+.fig span{background:rgba(255,248,240,.35);border:1px solid rgba(57,43,53,.15);border-radius:8px;padding:7px 8px;font:400 10.5px/1.25 var(--f-body);color:var(--slate);min-width:0}
+.fig b{display:block;font:500 13px/1.2 var(--f-mono);font-variant-numeric:tabular-nums;color:var(--paper-ink);margin-bottom:2px}
+.fy{font:400 11.5px/1.4 var(--f-body);color:var(--slate)}
+.src{font:400 12px/1.5 var(--f-body);color:var(--slate)}
+.quip{position:relative;margin:8px 16px 0;background:var(--paper-2);border:1.5px solid var(--paper-ink);border-radius:12px;padding:7px 10px;
+  font:italic 500 14.5px/1.35 var(--f-body);text-align:center;text-wrap:balance}
+.quip::before{content:"";position:absolute;top:-8px;left:50%;margin-left:-7px;border:7px solid transparent;border-top:0;border-bottom:8px solid var(--paper-ink)}
+.quip::after{content:"";position:absolute;top:-5.5px;left:50%;margin-left:-5.5px;border:5.5px solid transparent;border-top:0;border-bottom:6.5px solid var(--paper-2)}
+.letter .modal{border-top:6px solid var(--reject)}
+.letter h3{font-size:26px}
+.letter p{margin:8px 0;font:400 14.5px/1.55 var(--f-body)}
+.pname{display:grid;gap:5px;margin:10px 0 4px;font:600 12px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--wine)}
+.pname input{font:italic 500 20px/1.2 var(--f-body);text-transform:none;letter-spacing:0;color:var(--paper-ink);background:transparent;border:0;border-bottom:2px solid var(--paper-ink);padding:6px 2px;border-radius:0;outline:none}
+.pname input:focus-visible{border-bottom-color:var(--approve)}
+.modal .next:disabled{opacity:.45;cursor:not-allowed}
+.letter .disc{font:400 11.5px/1.45 var(--f-body);color:var(--slate);border-top:1px dotted rgba(57,43,53,.35);padding-top:8px;margin:10px 0 12px}
+.letter .sig{font:italic 500 17px/1.45 var(--f-body);color:var(--paper-ink);margin-top:14px}
+.letter ul{margin:8px 0;padding-left:18px;font:400 14px/1.5 var(--f-body)}
+.veil.letter{place-items:center}
+.src a{color:var(--approve)}
+.modal .next{width:100%;margin-top:12px;appearance:none;border:0;border-radius:10px;padding:14px;background:var(--paper-ink);color:var(--paper);
+  font:700 15px/1 var(--f-body);cursor:pointer}
+
+.over{background:radial-gradient(120% 90% at 50% 20%,rgba(187,71,79,.75),rgba(57,43,53,.97));place-items:center}
+.over .modal{background:var(--grain),var(--paper);color:var(--paper-ink);text-align:center;border:0;transform:rotate(-1deg)}
+.over .kicker{color:var(--reject)}
+.over h3{font-size:30px;color:var(--paper-ink)}
+.over .big{font:800 56px/1 var(--f-display);margin:8px 0}
+.over p{font:400 15px/1.5 var(--f-body);margin:8px 0}
+.over .quote{font:italic 400 14px/1.45 var(--f-body);color:var(--wine);border-left:3px solid var(--reject);text-align:left;padding-left:10px;margin:12px 0}
+.over .stats-sum{font:500 12px/1.6 var(--f-mono);color:var(--slate)}
+.over .next{background:var(--reject);color:var(--paper-2)}
+.over .modal{max-height:calc(100% - 20px);overflow:auto}
+.over .review{text-align:left;margin-top:8px}
+.over .review h4{font:700 10.5px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--wine);margin:12px 0 6px}
+.over .rv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(57,43,53,.25);border:1px solid rgba(57,43,53,.25);border-radius:6px;overflow:hidden}
+.over .rv-grid div{background:var(--paper);padding:8px 6px;text-align:center}
+.over .rv-grid b{display:block;font:800 19px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.over .rv-grid span{font:500 9.5px/1.2 var(--f-mono);color:var(--slate);text-transform:uppercase;letter-spacing:.04em}
+.over .rv-pacts{font:400 13px/1.4 var(--f-body);margin:8px 0}
+.futs{display:grid;gap:8px;margin:6px 0 2px;text-align:left}
+.ag-stakes{display:inline-block;margin:4px 0 2px;font:700 11px/1.2 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--reject);border-radius:999px;padding:4px 9px}
+.drift{margin:6px 0 4px;font:600 12.5px/1.35 var(--f-body);color:var(--reject)}.drift i{font-weight:500;opacity:.8}
+.agenda li.crisis{color:var(--reject);font-weight:700}.agenda li.crisis b::before{content:'⚠ '}
+.dossier .crisis{color:var(--reject)}
+.dreams{display:grid;gap:7px;margin-top:10px}.dr-h{font:700 11px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--wine)}
+.dream{appearance:none;display:flex;gap:10px;align-items:center;width:100%;border:2px solid var(--wine);background:rgba(255,255,255,.4);color:inherit;border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;font:inherit}
+.dream:hover,.dream:focus-visible{background:rgba(255,255,255,.75);outline:none}
+.dream .fi{font-size:26px;flex:none}.dream b{display:block;font:700 15px/1.2 var(--f-body)}.dream small{display:block;font:500 12px/1.3 var(--f-body);opacity:.8}.dream small.fp{font:600 10.5px/1.3 var(--f-mono);opacity:.6;margin-top:2px}
+.dr-now{margin:8px 0 6px;font:600 12.5px/1.35 var(--f-body)}
+.dr-end{margin:10px 0 0;font:600 14px/1.35 var(--f-body)}.dr-end.ok{color:#2f7a35}.dr-end.no{opacity:.75}.dr-end small{font-weight:500;opacity:.75}
+.fut.mine{box-shadow:0 0 0 3px #e0b23c}.mine-tag{font:700 10px/1 var(--f-mono);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#9a6a00;margin-left:4px}
+.dchip{font:600 12px/1 var(--f-mono);margin-left:6px;opacity:.9}.dchip.ok{color:#7fd38a}
+.card .ctimer{position:absolute;left:0;right:0;top:0;height:7px;border-radius:6px 6px 0 0;border-radius:3px;background:rgba(0,0,0,.12);overflow:hidden;z-index:4}
+.card .ctimer i{display:block;height:100%;background:var(--reject);transform-origin:left;transition:transform .1s linear}
+.card .csecs{position:absolute;left:14px;bottom:12px;z-index:4;font:800 15px/1 var(--f-mono);color:#fff;background:var(--reject);border-radius:999px;padding:5px 9px;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+.card.hurry .csecs{animation:gnudge .35s infinite}
+.ribbon{position:fixed;left:0;top:44%;z-index:30;width:34px;height:58px;padding:0 10px 0 4px;border:0;appearance:none;cursor:pointer;background:linear-gradient(90deg,#9e2b2b,var(--reject));color:#fff;
+  clip-path:polygon(0 0,100% 0,72% 50%,100% 100%,0 100%);box-shadow:0 4px 10px rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;transition:width .2s}
+.ribbon:hover,.ribbon:focus-visible{width:40px;outline:none}
+.ribbon span{font-size:15px;line-height:1}.ribbon b{font:700 9px/1 var(--f-mono)}
+.ribbon .secdot{position:absolute;top:4px;left:20px;width:9px;height:9px;border-radius:50%;background:#ffd34d;box-shadow:0 0 0 2px #9e2b2b}
+body:has(#layer .over) .ribbon,body:has(#layer .news) .ribbon,body:has(#ovl:not(:empty)) .ribbon{display:none}
+body:has(#sheet:not([hidden])) .ribbon{z-index:1;pointer-events:none}
+#secShade{position:fixed;inset:0;z-index:68;background:rgba(10,6,8,.5)}
+#secDrawer{position:fixed;top:0;bottom:0;left:0;z-index:69;width:min(370px,88vw);overflow-y:auto;overscroll-behavior:contain;padding:22px 16px 20px;box-sizing:border-box;
+  background:var(--grain),var(--paper-2);color:var(--paper-ink);box-shadow:8px 0 30px rgba(0,0,0,.5);border-right:5px solid var(--reject);transform:translateX(-105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+#secDrawer.open{transform:none;visibility:visible}
+#secDrawer .fut{box-sizing:border-box;max-width:100%}
+#secDrawer h3{margin:2px 0 6px;font:800 24px/1.1 var(--f-body)}#secDrawer .kicker{font:700 10.5px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--reject)}
+#secDrawer .small{font:500 13.5px/1.4 var(--f-body);opacity:.85;margin:0 0 10px}
+#secDrawer .sl-x{position:absolute;top:10px;right:10px;appearance:none;border:0;background:none;font:700 22px/1 var(--f-body);color:var(--paper-ink);cursor:pointer;padding:6px}
+.seclist .fut.sl{cursor:default}.seclist .fut.done{border-color:#2f7a35;background:rgba(47,122,53,.12)}
+.seclist .chk{font-style:normal;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#2f7a35;color:#fff;font-size:12px;margin-left:4px;vertical-align:2px}
+.set .erase{appearance:none;display:block;width:100%;margin:12px 0 4px;border:1px dashed var(--reject);background:none;color:var(--reject);border-radius:8px;padding:9px;font:600 13px/1 var(--f-body);cursor:pointer}
+.fut-h{font:700 10.5px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--wine);margin:14px 0 4px}
+.fut{appearance:none;display:flex;gap:12px;align-items:center;width:100%;border:2px solid var(--wine);background:rgba(255,255,255,.35);color:inherit;border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit}
+.fut:hover,.fut:focus-visible{background:rgba(255,255,255,.7);outline:none;box-shadow:0 0 0 3px rgba(122,40,60,.25)}
+.fut .fi{font-size:30px;line-height:1;flex:none}
+.fut b{display:block;font:700 16px/1.2 var(--f-body)}
+.fut small{display:block;font:500 12.5px/1.3 var(--f-body);opacity:.8}
+.fut small.fp{font:600 11px/1.3 var(--f-mono);opacity:.6;margin-top:2px}
+.fut.locked{border-style:dashed;border-color:rgba(60,40,50,.35);cursor:not-allowed;opacity:.62;background:none}
+.over .rv-next{font:italic 500 16px/1.45 var(--f-body);margin:4px 0}
+.over .rv-real{font:400 12px/1.45 var(--f-body);color:var(--slate);border-left:3px solid var(--approve);padding-left:8px}
+.veil.news.fired{background:radial-gradient(120% 90% at 50% 20%,rgba(187,71,79,.6),rgba(28,20,26,.96))}
+.news .np-box .hw{margin:3px 0;font:400 11px/1.35 var(--np-serif)}
+.news .np-box .hw span{font:600 11px/1 var(--f-mono);white-space:nowrap}.news .np-box .hw .n{color:#a63a44}.news .np-box .hw .p{color:#3d6b65}
+.win .modal{border-top:6px solid var(--star)}
+.win .kicker{color:#3d6b65}
+
+@media (max-height:640px){.portrait svg,.portrait img.art{width:84px}.body h2{font-size:21px}.body p{font-size:15.5px}.stats{padding-block:8px 6px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="stats" id="stats"></div>
+  <div class="meta"><button class="gear" id="menuBtn" type="button" aria-label="Main menu">☰</button><button class="gear" id="gear" type="button" aria-label="Settings">⚙</button><span><b id="day">Day 1</b> · <span id="wd">Monday</span></span><span class="mtg">Meeting <span id="slot">1</span>/4 · dossier <span id="count">1</span>/<span id="total"></span></span><span class="prac">Practice round</span></div>
+  <div class="purse" id="purse"></div>
+  <div class="pacts" id="pacts" aria-label="Active pacts"></div>
+  <div class="stage" id="stage"></div>
+  <div class="rcwrap"><div class="sheet" id="sheet" hidden></div>
+    <button class="rctab" id="rcTab" type="button" aria-expanded="false" aria-controls="sheet"></button></div>
+  <div class="toast" id="toast" hidden></div>
+  <div class="choices">
+    <button class="l" id="btnL" type="button">← Reject</button>
+    <button class="m" id="btnM" type="button" aria-label="Compromise"><span>⇅ Compromise</span><small id="mLeft"></small></button>
+    <button class="r" id="btnR" type="button">Approve →</button>
+  </div>
+  <div class="foot">Real dossiers · data: <a href="https://transparency-register.europa.eu" target="_blank" rel="noopener">Transparency Register</a>, <a href="https://www.lobbyfacts.eu" target="_blank" rel="noopener">LobbyFacts</a>, <a href="https://corporateeurope.org" target="_blank" rel="noopener">CEO</a>, <a href="https://www.lobbycontrol.de" target="_blank" rel="noopener">LobbyControl</a>, EUR-Lex<br>Satire: lobbyists, quotes and headlines are fictional · not affiliated with any organisation named</div>
+</div>
+<div id="layer"></div>
+<div id="warn" hidden role="status"></div>
+<div id="gshade" hidden></div>
+<button class="ribbon" id="secTab" type="button" hidden aria-label="Open your Secret list"><span aria-hidden="true">🤫</span><b id="secN"></b><i class="secdot" hidden></i></button>
+<div id="secShade" hidden></div>
+<aside id="secDrawer" role="dialog" aria-modal="true" aria-label="Secret list" aria-hidden="true"></aside>
+<div id="gerard" class="gerard" hidden role="status" aria-live="polite"></div>
+<div id="ovl"></div>
+
+<script>
+// Pre-render the paper grain once as a small PNG tile; much cheaper than an SVG noise filter on mobile.
+(function(){try{const n=128,c=document.createElement('canvas');c.width=c.height=n;const x=c.getContext('2d'),im=x.createImageData(n,n);
+for(let i=0;i<im.data.length;i+=4){const v=Math.random();im.data[i]=57;im.data[i+1]=43;im.data[i+2]=53;im.data[i+3]=v<.5?0:Math.round((v-.5)*38);}
+x.putImageData(im,0,0);document.documentElement.style.setProperty('--grain',`url(${c.toDataURL()})`);}catch(e){}})();
+</script>
+<script src="data.js"></script>
+<script src="overrides.js"></script>
+<script>
+/* ---------- state ---------- */
+let practicing=false, practiced=false, inGame=false; const curCard=()=>practicing?PRACTICE:CARDS[deck[idx]];
+let PX={}, hist=[], warned={}, matchTotal=0, spawned=[], bonus=0, PL=1, inf=INFL_START, infShown=INFL_START, hikes=0, indexed=false; const newPX=()=>({dream:null,calm:0,crisisDay:0,driftDay:1,crises:[],used:[],sealed:[],freeze:null,debt:null,earth:0,justice:0,charges:{rewind:0,ghost:0,rally:0,comp:0},unrest:0,rally:false,ghostAt:-1,snap:null,compDay:0,curse:0,curseAt:-1,curseHit:false});
+let money=START_MONEY, heat=0, owned=[], promises=new Map(), S, deck, idx, day, busy=false, dayLog=[], usedWorld=[], pending=[], usedEv=[], dayStart=null, dayMatch=0, cause=null;
+const $=s=>document.querySelector(s);
+const stage=$('#stage'), layer=$('#layer');
+// Apply edits made in the control room (lines + own art). Keys: card:<id>, follow:<id>, char:<k>, event:<id>.
+// Text edits from the Regiekamer: first from overrides.js, then live from the game's own store (see bottom).
+function applyText(O){
+  {const o=O['practice:card'];if(o){if(o.title)PRACTICE.title=o.title;if(o.quip)PRACTICE.quip=o.quip;if(o.ask)PRACTICE.ask=o.ask;}}
+  if(O['gerard:back'])Object.keys(GERARD_WELCOME_BACK).forEach(k=>{if(O['gerard:back'][k])GERARD_WELCOME_BACK[k]=O['gerard:back'][k];});
+  if(O['gerard:welcome'])Object.keys(GERARD_WELCOME).forEach(k=>{if(O['gerard:welcome'][k])GERARD_WELCOME[k]=O['gerard:welcome'][k];});
+  Object.keys(TIPS).forEach(k=>{const o=O['tip:'+k];if(o&&o.text)TIPS[k]=o.text;});
+  GERARD_QUIPS.forEach((q,i)=>{const o=O['quip:'+i];if(o&&o.text)GERARD_QUIPS[i]=o.text;});
+  const img=u=>`<img class="art" src="${u}" alt="">`;
+  CARDS.forEach(c=>{if(c.follow)return;const o=O['card:'+c.id];if(!o)return;if(o.name){if(!c.faceSeed)c.faceSeed=c.name;c.name=o.name;}if(o.quip)QUIPS[c.title]=o.quip;if(o.ask)c.ask=o.ask;if(o.art)c.artUrl=o.art;});
+  FOLLOW.forEach(f=>{const o=O['follow:'+f.id];if(!o)return;if(o.name){if(!f.faceSeed)f.faceSeed=f.name;f.name=o.name;}if(o.quip)f.quip=o.quip;if(o.ask)f.ask=o.ask;if(o.art)f.artUrl=o.art;});
+  Object.keys(CHARS).forEach(k=>{const o=O['char:'+k];if(!o)return;if(o.name)CHARS[k].name=o.name;if(o.hello)CHARS[k].hello=o.hello;if(o.art)CHARS[k].svg=img(o.art);});
+  EVENTS.forEach(e=>{const o=O['event:'+e.id];if(o&&o.text)e.text=o.text;});
+}
+(function applyOverrides(){
+  applyText((typeof OVERRIDES==='object'&&OVERRIDES)||{});
+  const img=u=>`<img class="art" src="${u}" alt="">`;
+  // Art from the Art Studio (keys: person:<name>, char:<k>, sector:<K>, world:<id>, ui:title|bg|paper)
+  const A=(typeof ART==='object'&&ART)||{};
+  const slugA=t=>String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  [...CARDS,...FOLLOW].forEach(c=>{const u=A['person:'+slugA(c.faceSeed||c.name)];if(u&&!c.artUrl)c.artUrl=u;});
+  Object.keys(CHARS).forEach(k=>{if(A['char:'+k])CHARS[k].svg=img(A['char:'+k]);});
+  Object.keys(SECTORS).forEach(k=>{if(A['sector:'+k])SECTORS[k].img=A['sector:'+k];});
+  WORLD.forEach(w=>{if(A['world:'+w.id])w.img=A['world:'+w.id];});
+  window.TITLE_ART=A['ui:title']||'';
+  if(A['ui:bg'])document.body.style.background=`var(--night) url("${A['ui:bg']}") center/cover fixed`;
+  if(A['ui:paper'])document.documentElement.style.setProperty('--grain',`url("${A['ui:paper']}")`);
+  const drawn=face;face=c=>c.artUrl?`<img class="art" src="${c.artUrl}" alt="" style="background:${(SECTORS[c.sector]||{}).c||'transparent'}">`:drawn(c);
+})();
+FOLLOW.forEach(f=>{f.follow=true;CARDS.push(f)});
+
+
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){
+  S={eco:50,clim:50,trust:50,corp:50};
+  deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual)); idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
+  {PX.body=[];if(bodyName()){const seen=new Set();shuffle(deck.slice(2)).forEach(k=>{const c=CARDS[k];if(PX.body.length<BODY_VISITS&&!c.char&&!seen.has(c.sector)){seen.add(c.sector);PX.body.push(c.id);}});}}
+  renderStats(); stage.innerHTML=''; $('.rcwrap').hidden=true; if(typeof updateSecTab==='function'){closeSecrets();updateSecTab();} title();
+}
+// ---------- Settings (per device) ----------
+const PREF={music:true,sfx:true,font:'classic',tips:true};
+try{Object.assign(PREF,JSON.parse(localStorage.getItem('swl-prefs')||'{}'));}catch(e){}
+const savePref=()=>{try{localStorage.setItem('swl-prefs',JSON.stringify(PREF));}catch(e){}};
+const FONTS={
+ classic:{label:'Classic',desc:'Clean office print',display:'"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif',body:'"IBM Plex Sans", system-ui, sans-serif'},
+ type:{label:'Typewriter',desc:'Like a dusty Brussels memo',display:'"Courier Prime", "Courier New", monospace',body:'"Courier Prime", "Courier New", monospace'},
+ easy:{label:'Easy reading',desc:'Extra clear letters',display:'"Atkinson Hyperlegible", system-ui, sans-serif',body:'"Atkinson Hyperlegible", system-ui, sans-serif'},
+ dyslexia:{label:'Dyslexia friendly',desc:'OpenDyslexic: heavier letter bottoms, easier to tell apart',display:'OpenDyslexic, "Atkinson Hyperlegible", sans-serif',body:'OpenDyslexic, "Atkinson Hyperlegible", sans-serif',file:'dyslexic.js'}};
+function applyFont(){const f=FONTS[PREF.font]||FONTS.classic;
+  if(f.file&&!document.querySelector(`script[data-font="${PREF.font}"]`)){const sc=document.createElement('script');sc.src=f.file;sc.dataset.font=PREF.font;document.head.appendChild(sc);}const r=document.documentElement.style;r.setProperty('--f-display',f.display);r.setProperty('--f-body',f.body);}
+applyFont();
+
+// ---------- Sound: generated in the browser, no files ----------
+const SND=(()=>{
+  let ctx=null,master=null,musicGain=null,sfxGain=null,timer=null,step=0,nextT=0,lastType=0;
+  const ensure=()=>{if(ctx)return true;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return false;
+    ctx=new AC();master=ctx.createGain();master.gain.value=.9;master.connect(ctx.destination);
+    musicGain=ctx.createGain();musicGain.gain.value=PREF.music?.11:0;musicGain.connect(master);
+    sfxGain=ctx.createGain();sfxGain.gain.value=PREF.sfx?.5:0;sfxGain.connect(master);return true;};
+  const tone=(f,t,d,type,g,dest)=>{const o=ctx.createOscillator(),a=ctx.createGain();o.type=type;o.frequency.value=f;
+    a.gain.setValueAtTime(0,t);a.gain.linearRampToValueAtTime(g,t+.02);a.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(a);a.connect(dest);o.start(t);o.stop(t+d+.05);};
+  const noise=(t,d,g,from,to,type='bandpass')=>{const n=ctx.createBufferSource(),b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*d),ctx.sampleRate),c=b.getChannelData(0);
+    for(let i=0;i<c.length;i++)c[i]=Math.random()*2-1;n.buffer=b;const f=ctx.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(from,t);f.frequency.exponentialRampToValueAtTime(to,t+d);
+    const a=ctx.createGain();a.gain.setValueAtTime(g,t);a.gain.exponentialRampToValueAtTime(.0001,t+d);n.connect(f);f.connect(a);a.connect(sfxGain);n.start(t);n.stop(t+d);};
+  // Music: a slow, slightly smug "lobby lounge" loop (Dm7 G7 Cmaj7 A7)
+  const CH=[[146.8,174.6,220,261.6],[196,246.9,293.7,349.2],[130.8,164.8,196,246.9],[110,138.6,164.8,196]];
+  const BASS=[73.4,98,65.4,55],BEAT=.5;
+  const sched=()=>{while(nextT<ctx.currentTime+.6){const bar=Math.floor(step/8)%4,b=step%8;
+      if(b===0)CH[bar].forEach((f,i)=>tone(f,nextT+i*.03,BEAT*7.5,'triangle',.05,musicGain));
+      if(b===0||b===3||b===4||b===6)tone(BASS[bar]*(b===6?1.5:1),nextT,BEAT*1.2,'sine',.16,musicGain);
+      if(b%2===1&&Math.random()<.55){const c=CH[bar];tone(c[(Math.random()*4)|0]*2,nextT,.35,'sine',.03,musicGain);}
+      step++;nextT+=BEAT;}};
+  const startMusic=()=>{if(!ensure())return;if(ctx.state==='suspended')ctx.resume();if(timer)return;nextT=ctx.currentTime+.1;timer=setInterval(sched,150);};
+  return{
+    unlock(){if(ensure()&&ctx.state==='suspended')ctx.resume();startMusic();},
+    setMusic(on){PREF.music=on;savePref();if(ctx)musicGain.gain.setTargetAtTime(on?.11:0,ctx.currentTime,.2);},
+    setSfx(on){PREF.sfx=on;savePref();if(ctx)sfxGain.gain.setTargetAtTime(on?.5:0,ctx.currentTime,.05);},
+    swipe(){if(!ctx||!PREF.sfx)return;noise(ctx.currentTime,.28,.5,2200,500);},
+    stamp(ok){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime+.05;tone(ok?110:90,t,.18,'sine',.9,sfxGain);noise(t,.08,.6,1200,300,'lowpass');
+      if(ok){ // approve: bright rising "ding-ding-DING"
+        [523.3,659.3,784,1046.5].forEach((f,i)=>{tone(f,t+.08+i*.07,i===3?.55:.22,'triangle',i===3?.28:.2,sfxGain);tone(f*2,t+.08+i*.07,.15,'sine',.05,sfxGain);});
+      }else{ // reject: low descending buzzer "bwaa-bwomp"
+        [[233,.22],[185,.45]].forEach(([f,d],i)=>{const st=t+.08+i*.2,o=ctx.createOscillator(),lp=ctx.createBiquadFilter(),a=ctx.createGain();
+          o.type='sawtooth';o.frequency.setValueAtTime(f,st);o.frequency.exponentialRampToValueAtTime(f*.86,st+d);
+          lp.type='lowpass';lp.frequency.value=900;a.gain.setValueAtTime(0,st);a.gain.linearRampToValueAtTime(.22,st+.02);a.gain.exponentialRampToValueAtTime(.0001,st+d);
+          o.connect(lp);lp.connect(a);a.connect(sfxGain);o.start(st);o.stop(st+d+.05);});
+      }},
+    type(){if(!ctx||!PREF.sfx)return;const n=performance.now();if(n-lastType<55)return;lastType=n;tone(1800+Math.random()*500,ctx.currentTime,.03,'square',.03,sfxGain);},
+    ghost(big){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime+.02,d=big?1.9:1.1;
+      const o=ctx.createOscillator(),lfo=ctx.createOscillator(),lg=ctx.createGain(),a=ctx.createGain(),lp=ctx.createBiquadFilter(),dl=ctx.createDelay(),fb=ctx.createGain();
+      o.type='sine';o.frequency.setValueAtTime(330,t);o.frequency.linearRampToValueAtTime(520,t+d*.35);o.frequency.linearRampToValueAtTime(290,t+d);
+      lfo.frequency.value=6;lg.gain.value=14;lfo.connect(lg);lg.connect(o.frequency);
+      lp.type='lowpass';lp.frequency.value=1400;a.gain.setValueAtTime(.0001,t);a.gain.exponentialRampToValueAtTime(big?.22:.14,t+.25);a.gain.exponentialRampToValueAtTime(.0001,t+d);
+      dl.delayTime.value=.22;fb.gain.value=.35;o.connect(lp);lp.connect(a);a.connect(sfxGain);a.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(sfxGain);
+      o.start(t);lfo.start(t);o.stop(t+d+.05);lfo.stop(t+d+.05);noise(t,d*.8,.05,900,400,'bandpass');},
+    paper(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;noise(t,.35,.35,3500,1500,'highpass');noise(t+.12,.25,.25,3000,1200,'highpass');},
+    knock(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[0,.18].forEach(d=>{tone(160,t+d,.12,'sine',.8,sfxGain);noise(t+d,.05,.4,900,300,'lowpass');});},
+    chime(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[659,880,1046].forEach((f,i)=>tone(f,t+i*.09,.6,'sine',.12,sfxGain));},
+    fired(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[392,370,349,294].forEach((f,i)=>tone(f,t+i*.32,i===3?1.1:.35,'triangle',.25,sfxGain));},
+    win(){if(!ctx||!PREF.sfx)return;const t=ctx.currentTime;[523,659,784,1046].forEach((f,i)=>tone(f,t+i*.12,.5,'triangle',.2,sfxGain));}
+  };
+})();
+
+// ---------- Title screen, settings, info (own overlay, so they never disturb a running game) ----------
+const ovl=document.getElementById('ovl');
+const closeOvl=()=>{ovl.innerHTML='';};
+function beginNew(){if(GERARD_ALWAYS){SEEN.clear();PREF.tips=true;}SND.knock();closeOvl();intro();}
+// ---------- Save & continue (per device) ----------
+const SAVE_KEY='swl-save';
+function hasSave(){try{const x=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');return !!(x&&x.cardsLen===CARDS.length);}catch(e){return false;}}
+function savedDay(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)).day;}catch(e){return 1;}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+function saveGame(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,cardsLen:CARDS.length,S,deck,idx,day,money,heat,owned,promises:[...promises],usedWorld,
+  pending:pending.map(x=>({at:x.at,ev:x.ev.id})),usedEv,PX:{...PX,snap:null},PLAYER,hist:hist.map(h=>({id:h.c.id,dir:h.dir,dd:h.dd,day:h.day})),
+  matchTotal,spawned,bonus,PL,inf,infShown,hikes,indexed,warned,practiced}));}catch(e){}}
+function loadGame(){try{const x=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(!x||x.cardsLen!==CARDS.length)return false;
+  S=x.S;deck=x.deck;idx=x.idx;day=x.day;money=x.money;heat=x.heat;owned=x.owned;promises=new Map(x.promises);usedWorld=x.usedWorld;
+  pending=x.pending.map(p=>({at:p.at,ev:EVENTS.find(e=>e.id===p.ev)})).filter(p=>p.ev);usedEv=x.usedEv;PX={...newPX(),...x.PX,snap:null};PLAYER=x.PLAYER||PLAYER;
+  hist=x.hist.map(h=>({c:CARDS.find(c=>c.id===h.id),dir:h.dir,dd:h.dd,day:h.day})).filter(h=>h.c);matchTotal=x.matchTotal;spawned=x.spawned;bonus=x.bonus;PL=x.PL;inf=x.inf;infShown=x.infShown;hikes=x.hikes;indexed=x.indexed;warned=x.warned||{};practiced=x.practiced;
+  dayLog=[];dayMatch=0;dayStart={...S};layer.innerHTML='';inGame=true;renderStats();updateStats();return true;}catch(e){clearSave();return false;}}
+function openMenu(){const g=$('#gerard');g.hidden=true;tipQ.length=0;tipBusy=false;$('#warn').hidden=true;SND.paper&&SND.paper();title();}
+function title(){
+  ovl.innerHTML=`<div class="veil title"><div class="tbox" role="dialog" aria-modal="true" aria-labelledby="t-h">
+    ${window.TITLE_ART?`<img class="tart" src="${window.TITLE_ART}" alt="">`:`<div class="deco" aria-hidden="true"><i></i><i></i><i><b>APPROVED</b></i></div>`}
+    <h1 id="t-h">Swipe <span>&amp;</span> Lobby</h1>
+    <p class="tag">Four lobbyists a day. Four bars to keep in balance. One very nervous Commissioner: you.</p>
+    <div class="menu">${inGame||hasSave()?`<button class="primary" id="t-cont" type="button">Continue${inGame?'':` · day ${savedDay()}`}</button><button id="t-restart" type="button">Restart game</button>`:'<button class="primary" id="t-start" type="button">Start</button>'}
+      <button id="t-how" type="button">How to play</button>
+      <button id="t-set" type="button">Settings</button><button id="t-info" type="button">Info &amp; sources</button></div>
+    ${window.CAN_EDIT?'<span class="t-edits"><a id="t-edit" class="t-edit" href="regiekamer.html">✎ Regiekamer (texts)</a> · <a class="t-edit" href="https://claude.ai/artifact/U9ZbpujtoFfqwjNU848f22" target="_blank" rel="noopener">🎨 Art Studio</a><br><small>only you see this</small></span>':''}
+    <div class="credit">Made by Wesley vanroose · satire based on real EU dossiers<br><span class="ver">${typeof GAME_VERSION!=='undefined'?GAME_VERSION:''}</span></div></div></div>`;
+  if($('#t-start'))$('#t-start').onclick=()=>{SND.unlock();beginNew();};
+  if($('#t-cont'))$('#t-cont').onclick=()=>{SND.unlock();SND.knock();if(inGame){closeOvl();return;}if(loadGame()){closeOvl();gate();}else{start();}};
+  if($('#t-restart'))$('#t-restart').onclick=e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure='1';b.textContent='Sure? Your progress is lost. Tap again';return;}
+    SND.unlock();clearSave();SEEN.clear();saveSeen();PREF.tips=true;savePref();start();beginNew();};
+  $('#t-how').onclick=()=>{SND.unlock();howTo(title);};
+  $('#t-set').onclick=()=>{SND.unlock();settings(title);};
+  $('#t-info').onclick=()=>{SND.unlock();info(title);};
+  ($('#t-cont')||$('#t-start')).focus({preventScroll:true});
+}
+const HOWTO=[
+ {ico:'🗂️',h:'Your job',t:`<p>You are the new EU Commissioner. Every day <b>four lobbyists</b> visit you with a real EU dossier.</p>
+   <div class="ht-swipe"><span class="l">← Reject</span><span class="c" aria-hidden="true"></span><span class="r">Approve →</span></div>
+   <p>Swipe the card <b>right to approve</b> or <b>left to reject</b>, or use the buttons.</p>`},
+ {ico:'📊',h:'Four bars',t:`<p>💰 Economy · 🌍 Climate · 🤝 Trust · 🏢 Corp. Power</p>
+   <p>Every choice moves the bars. While you drag a card, dots on the bars show which ones will move.</p>
+   <p class="ht-warn">If a bar hits <b>0% or 100%</b>, you’re fired. Too much of a good thing is also a problem.</p>`},
+ {ico:'🔎',h:'Read before you choose',t:`<p><b>Tap the text</b> on a card to read it big.</p>
+   <p>Open the <b>Reality check</b> under the card to see who lobbied and what the EU really decided. Reading it is never cheating; it’s the point.</p>`},
+ {ico:'⇅',h:'Compromise',t:`<p>Sometimes Brussels didn’t say yes or no, but met in the middle. Only on those dossiers you can <b>swipe up</b> or press <b>⇅ Compromise</b>.</p>
+   <p>Pick one of three deals. Guess the one Brussels really chose for <b>+€2k and +1 Trust</b>.</p>
+   <p>You get <b>one compromise a day</b>. Need more? Buy a late-night trilogue in the shop.</p>`},
+ {ico:'📰',h:'The evening paper',t:`<p>Every evening you get one newspaper. Flip through its pages.</p>
+   <p><span class="ht-red">In your Europe</span> shows what your choice did in the game. <span class="ht-blue">In real life</span> shows what actually happened.</p>
+   <p>Inside: world events, scandals and tonight’s <b>📈 inflation</b>. If prices run too hot, the ECB raises interest rates.</p>`},
+ {ico:'🌙',h:'The backroom deal',t:`<p>From the evening of day 2, characters offer cash or favours after hours. <b>Read the small print</b>: some deals have a catch that ends up in the paper later.</p>
+   <p>A <b>promise</b> locks a button: if you promised to approve, you can’t reject.</p>
+   <p>From the night of day 3, <b>supernatural visitors</b> may appear at midnight with powerful pacts. Every gift has a price.</p>`},
+ {ico:'💶',h:'Money and the shop',t:`<p>You earn a salary every day, plus whatever you accept on the side. Before each day you can visit the <b>shop</b>.</p>
+   <p>Luxury draws <b>👀 media attention</b>, and journalists love asking how you paid for it. Inflation makes everything pricier, and a villa comes with a mortgage.</p>
+   <p class="ht-warn">Survive every dossier to complete your term. Good luck, Commissioner.</p>`}
+];
+function howTo(back){let i=0;
+  const draw=()=>{const p=HOWTO[i],last=i===HOWTO.length-1;
+    ovl.innerHTML=`<div class="veil letter howto${back===title?' title-bg':''}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ht-h">
+      <div class="kicker">How to play · ${i+1} of ${HOWTO.length}</div>
+      <div class="ht-ico" aria-hidden="true">${p.ico}</div><h3 id="ht-h">${p.h}</h3>${p.t}
+      <div class="ht-dots" aria-hidden="true">${HOWTO.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
+      <div class="ht-nav"><button type="button" id="ht-prev" ${i?'':'disabled'}>← Back</button><button type="button" class="next" id="ht-next">${last?(back===title?'Got it, back to the menu':'Got it'):'Next →'}</button></div>
+      <button type="button" class="ht-skip" id="ht-skip">${last?'':'Skip'}</button></div></div>`;
+    $('#ht-prev').onclick=()=>{i--;draw();};
+    $('#ht-next').onclick=()=>{if(last){back?back():closeOvl();return;}i++;draw();};
+    $('#ht-skip').onclick=()=>back?back():closeOvl();
+    $('#ht-next').focus({preventScroll:true});};
+  draw();
+  const m=()=>ovl.querySelector('.howto .modal');let x0=null;
+  ovl.addEventListener('pointerdown',e=>{if(e.target.closest('.howto .modal'))x0=e.clientX;},{once:false});
+  ovl.addEventListener('pointerup',e=>{if(x0===null||!m())return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)<50)return;
+    if(dx<0&&i<HOWTO.length-1){i++;draw();}else if(dx>0&&i>0){i--;draw();}});
+}
+// First launch: Gerard materialises as soon as you press Start.
+function ghostWelcome(next){
+  const back=!GERARD_ALWAYS&&SEEN.has('welcome');SEEN.add('welcome');SEEN.add('intro');saveSeen();SND.ghost&&SND.ghost(true);
+  const W=back?{head:GERARD_WELCOME_BACK.head,p1:GERARD_WELCOME_BACK.p1,go:GERARD_WELCOME_BACK.go}:GERARD_WELCOME;
+  ovl.innerHTML=`<div class="veil gwelcome"><div class="gw" role="dialog" aria-modal="true" aria-labelledby="gw-h">
+    <div class="gw-ghost">${CHARS.ghost.svg}</div>
+    <div class="gw-kick">👻 A ghost appears</div>
+    <h3 id="gw-h">${escH(W.head)}</h3>
+    ${['p1','p2','p3'].filter(k=>W[k]).map(k=>`<p>${N(W[k])}</p>`).join('')}
+    <button class="next" id="gw-go" type="button">${escH(W.go)}</button>
+    <button class="gw-skip" id="gw-skip" type="button">I know the game, no tips please</button></div></div>`;
+  $('#gw-go').onclick=next;
+  $('#gw-skip').onclick=()=>{PREF.tips=false;if(!GERARD_ALWAYS)savePref();next();};
+  $('#gw-go').focus({preventScroll:true});
+}
+function settings(back){
+  const tog=(id,on,lab,sub)=>`<div class="row"><div><b>${lab}</b><small>${sub}</small></div><button class="tog" id="${id}" role="switch" aria-checked="${on}" type="button" aria-label="${lab}"></button></div>`;
+  ovl.innerHTML=`<div class="veil letter set${back===title?' title-bg':''}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="s-h">
+    <div class="kicker">Settings</div><h3 id="s-h">Your office, your rules</h3>
+    ${tog('s-music',PREF.music,'Music','A smug little lobby lounge tune')}
+    ${tog('s-sfx',PREF.sfx,'Sound effects','Stamps, paper, typewriter, door knocks')}
+    ${tog('s-tips',PREF.tips,'Tips from '+escH(GHOST),'The ghost of your predecessor explains things the first time')}
+    <div class="fonts" role="radiogroup" aria-label="Font"><b style="font:600 15px var(--f-body)">Font</b>
+      ${Object.entries(FONTS).map(([k,f])=>`<button class="fontopt" role="radio" type="button" data-font="${k}" aria-checked="${PREF.font===k}" style="font-family:${f.body.replace(/"/g,"'")}"><b style="font-family:${f.display.replace(/"/g,"'")}">${f.label}</b><span>${f.desc}</span></button>`).join('')}</div>
+    <button class="erase" id="s-erase" type="button">Erase all game data</button>
+    <button class="next" id="s-back" type="button">${back===title?'Back':'Back to the game'}</button></div></div>`;
+  $('#s-music').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);SND.setMusic(on);};
+  $('#s-sfx').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);SND.setSfx(on);if(on)SND.stamp(true);};
+  $('#s-tips').onclick=e=>{const on=e.currentTarget.getAttribute('aria-checked')!=='true';e.currentTarget.setAttribute('aria-checked',on);PREF.tips=on;savePref();if(on){SEEN.clear();saveSeen();}};
+  ovl.querySelectorAll('.fontopt').forEach(b=>b.onclick=()=>{PREF.font=b.dataset.font;savePref();applyFont();ovl.querySelectorAll('.fontopt').forEach(x=>x.setAttribute('aria-checked',x===b));});
+  $('#s-erase').onclick=e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure='1';b.textContent='Sure? Everything is wiped, even the ghost. Tap again';return;}
+    try{Object.keys(localStorage).filter(k=>k.startsWith('swl-')).forEach(k=>localStorage.removeItem(k));}catch(e){}location.reload();};
+  $('#s-back').onclick=()=>back?back():closeOvl();$('#s-back').focus({preventScroll:true});
+}
+function info(back){
+  ovl.innerHTML=`<div class="veil letter info${back===title?' title-bg':''}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="i-h">
+    <div class="kicker">Info &amp; sources</div><h3 id="i-h">Where the game gets its facts</h3>
+    <p>Every dossier is a real EU decision. Under each card, the reality check tells you who lobbied, what the EU decided and what happened next, with a link to the law itself.</p>
+    <h4>Sources</h4>
+    <ul>
+      <li><a href="https://eur-lex.europa.eu" target="_blank" rel="noopener">EUR-Lex</a>: the official texts of EU laws and decisions</li>
+      <li><a href="https://transparency-register.europa.eu" target="_blank" rel="noopener">EU Transparency Register</a>: who lobbies, with what budget</li>
+      <li><a href="https://www.lobbyfacts.eu" target="_blank" rel="noopener">LobbyFacts</a>: Transparency Register data made searchable over time</li>
+      <li><a href="https://corporateeurope.org" target="_blank" rel="noopener">Corporate Europe Observatory</a> and <a href="https://www.lobbycontrol.de" target="_blank" rel="noopener">LobbyControl</a>: research into lobbying campaigns</li>
+      <li><a href="https://www.desmog.com" target="_blank" rel="noopener">DeSmog</a>, Eurostat, the European Environment Agency and news coverage for the consequences</li>
+    </ul>
+    <h4>What is made up</h4>
+    <p>The lobbyists, their names and lines, the four regular visitors and the newspaper headlines are fiction. Effects on the four bars are game balance, not measurements.</p>
+    <h4>Please note</h4>
+    <p>Swipe &amp; Lobby is satire. It is not affiliated with or endorsed by any organisation it mentions. Lobbying figures are as reported to the register and may change.</p>
+    <p class="mini" style="margin-top:10px;color:var(--slate)">Made by Wesley vanroose · Dyslexia font: OpenDyslexic by Abbie Gonzalez (SIL Open Font License)</p>
+    <button class="next" id="i-back" type="button">${back===title?'Back':'Back to the game'}</button></div></div>`;
+  $('#i-back').onclick=()=>back?back():closeOvl();$('#i-back').focus({preventScroll:true});
+}
+$('#gear').onclick=()=>{SND.unlock();settings(null);};
+$('#menuBtn').onclick=()=>{SND.unlock();openMenu();};
+function shop(){
+  const A=(typeof ART==='object'&&ART)||{};
+  ovl.innerHTML=`<div class="veil letter shop"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="sh-h">
+    <div class="kicker">The Brussels boutique</div><h3 id="sh-h">Treat yourself, ${N('{name}')}</h3>
+    <div class="money">💶 You have ${eur(money)} · 👀 Media attention: ${heatWord(heat)}${PL>1.005?` · 📈 Prices up ${Math.round((PL-1)*100)}% since you started`:''}</div>
+    ${SHOP.map(it=>`<div class="item"><div class="ic">${A['shop:'+it.id]?`<img src="${A['shop:'+it.id]}" alt="">`:it.ico}</div>
+      <div><b>${it.name}</b><small>${it.desc}</small><small><em>+${it.heat} media attention</em></small></div>
+      ${owned.includes(it.id)?'<span class="owned">✓ Yours</span>':`<button class="buy" type="button" data-buy="${it.id}" ${money<priceOf(it)?'disabled':''}>${eur(priceOf(it))}</button>`}</div>`).join('')}
+    ${SHOP_EXTRA.map(it=>`<div class="item extra"><div class="ic">${A['shop:'+it.id]?`<img src="${A['shop:'+it.id]}" alt="">`:it.ico}</div>
+      <div><b>${it.name}</b><small>${it.desc}</small><small><em>You have ${PX.charges.comp||0} extra · +${it.heat} media attention</em></small></div>
+      <button class="buy" type="button" data-extra="${it.id}" ${money<priceOf(it)?'disabled':''}>${eur(priceOf(it))}</button></div>`).join('')}
+    <p class="disc" style="font:400 11.5px/1.45 var(--f-body);color:var(--slate);margin-top:10px"><b>This really happens:</b> ${SHOP_REAL}</p>
+    <button class="next" id="sh-back" type="button">Back to the diary</button></div></div>`;
+  ovl.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const it=SHOPMAP[b.dataset.buy];if(money<priceOf(it))return;
+    money-=priceOf(it);heat+=it.heat;owned.push(it.id);SND.chime();updatePurse();shop();
+    const sb=$('#shop');if(sb)sb.textContent=`🛍 Go shopping first (${eur(money)})`;});
+  ovl.querySelectorAll('[data-extra]').forEach(b=>b.onclick=()=>{const it=SHOP_EXTRA.find(x=>x.id===b.dataset.extra);if(money<priceOf(it))return;
+    money-=priceOf(it);heat+=it.heat;PX.charges.comp=(PX.charges.comp||0)+1;SND.chime();updatePurse();updateM();shop();
+    const sb=$('#shop');if(sb)sb.textContent=`🛍 Go shopping first (${eur(money)})`;});
+  $('#sh-back').onclick=closeOvl;$('#sh-back').focus({preventScroll:true});
+}
+
+// ---------- Player name ----------
+let PLAYER='';
+try{PLAYER=localStorage.getItem('swl-name')||'';}catch(e){}
+const escH=t=>String(t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+// The ghost's name: Gerard Loby, until a player gets possessed. Then that player's name haunts every new game (until the data is erased).
+let GHOST='Gerard Loby',GHOST_OLD=[];
+function ghostRename(){let g='';try{g=localStorage.getItem('swl-ghost')||'';}catch(e){}if(!g)return;
+  const from=['Gerard Loby',...GHOST_OLD.filter(x=>x!==g),'Gerard'].filter((x,i,a)=>x&&a.indexOf(x)===i);
+  const fix=v=>typeof v==='string'?from.reduce((t,f)=>t.split(f).join(g),v).split('{ghost}').join(g):v;
+  const fixObj=o=>{if(!o)return;Object.keys(o).forEach(k=>{if(typeof o[k]==='string')o[k]=fix(o[k]);else if(Array.isArray(o[k]))o[k]=o[k].map(fix);});};
+  [typeof TIPS!=='undefined'&&TIPS,typeof GERARD_WELCOME!=='undefined'&&GERARD_WELCOME,typeof GERARD_WELCOME_BACK!=='undefined'&&GERARD_WELCOME_BACK,CHARS.ghost,PRACTICE].forEach(fixObj);
+  if(typeof GERARD_QUIPS!=='undefined')GERARD_QUIPS.forEach((q,i)=>GERARD_QUIPS[i]=fix(q));
+  CARDS.filter(c=>c.ritual).forEach(fixObj);
+  GHOST_OLD.push(GHOST);GHOST=g;}
+const N=t=>String(t??'').replace(/\{name\}/g,escH(PLAYER||'Commissioner')).replace(/\{ghost\}/g,escH(GHOST));
+ghostRename();
+function intro(){
+  layer.innerHTML=`<div class="veil letter"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="in-t">
+   <div class="kicker">European Commission · Letter of appointment</div>
+   <h3 id="in-t">Welcome to Swipe &amp; Lobby, Commissioner</h3>
+   <label class="pname">Sign here with your name<input id="pname" type="text" maxlength="20" autocomplete="nickname" placeholder="Your name" value="${escH(PLAYER)}"></label>
+   <p>You have been appointed <b>Commissioner for Lobby Affairs</b>. Your office is ready. Your desk is empty. It won’t stay that way.</p>
+   <p class="sig">Yours sincerely,<br>The Secretariat-General (who also doesn’t know who nominated you. Sometimes we think this building is haunted.)</p>
+   <p class="disc"><b>Please note:</b> Swipe &amp; Lobby is satire. The lobbyists, their lines and the newspaper headlines are made up. The reality checks are based on public sources. This game is not affiliated with or endorsed by any organisation it mentions.</p>
+   <button class="next" id="go" type="button">Start day 1</button></div></div>`;
+  const inp=$('#pname'),go=$('#go');
+  const sync=()=>{const v=inp.value.trim();go.disabled=!v;go.textContent=v?`Start day 1, Commissioner ${v}`:'Sign your name to start';};
+  inp.addEventListener('input',sync);sync();
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!go.disabled){e.preventDefault();go.click();}});
+  go.onclick=()=>{PLAYER=inp.value.trim();try{localStorage.setItem('swl-name',PLAYER);}catch(e){}layer.innerHTML='';inGame=true;
+    const next=()=>needsPractice()?startPractice():gate();
+    if(PREF.tips&&!SEEN.has('welcome')){ghostWelcome(()=>{closeOvl();next();});return;}next();};
+  (PLAYER?go:inp).focus({preventScroll:true});
+}
+
+/* ---------- stats ---------- */
+function renderStats(){
+  $('#stats').innerHTML=STATS.map(s=>`<div class="stat" id="st-${s.k}"><span class="hint"></span><span class="ico">${s.ico}</span>
+   <div class="bar"><i style="width:${S[s.k]}%"></i></div><span class="pct">${S[s.k]}%</span><span class="lbl">${s.lbl}</span></div>`).join('');
+  updateStats();
+}
+const SHOPMAP=Object.fromEntries(SHOP.map(i=>[i.id,i]));
+const priceOf=it=>Math.round(it.price*PL);
+const salaryNow=()=>Math.round((SALARY+bonus)*(indexed?PL:1)*10)/10;
+const mortgage=()=>owned.includes('villa')?hikes*MORTGAGE_PER_HIKE:0;
+const eur=k=>{k=Math.round(k*10)/10;return k>=1000?`€${(k/1000).toFixed(k%1000?1:0)}m`:`€${k}k`;};
+const heatWord=h=>h<20?'low':h<45?'rising':h<70?'high':'red-hot';
+function updatePurse(){
+  const el=$('#purse');if(!el)return;
+  el.innerHTML=`<span>💶 <b>${eur(money)}</b> ${day>=UNLOCK.inflation?`<span class="infl${infShown>=ECB_LIMIT-1?' hot':''}" title="Inflation (from tonight’s paper)">📈 ${infShown.toFixed(infShown%1?1:0)}%</span>`:''}${mortgage()?` <span class="infl hot" title="Mortgage per day">🏠 −${eur(mortgage())}/day</span>`:''}</span>${PX.dream&&typeof DREAMS!=='undefined'?`<span class="dchip${dreamProg().ok?' ok':''}" title="Your dream: ${DREAMS[PX.dream].name}">${DREAMS[PX.dream].ico} ${dreamProg().ok?'✓':dreamProg().txt.split(' (')[0].replace(/ of .*/,'').replace(/ yes to the lobby/,' yes').replace(/ nature choices/,'')}</span>`:''}<span class="own" aria-label="Your possessions">${owned.map(id=>SHOPMAP[id]?SHOPMAP[id].ico:'').join('')}</span><span class="heat">👀 Media: ${heatWord(heat)}<i style="--h:${Math.min(100,heat)}%"></i></span>`;
+}
+function richWatch(){if(typeof SECRETS!=='undefined'&&SECRETS.island&&PX&&money<(SECRETS.island.minMoney||0))PX.richDay=null;}
+function updateStats(){
+  richWatch();updatePurse();updatePacts();if(typeof updateM==='function'&&PX.charges)updateM();
+  STATS.forEach(s=>{const el=$('#st-'+s.k),v=S[s.k];
+    el.querySelector('i').style.width=Math.max(0,Math.min(100,v))+'%';
+    el.querySelector('.pct').textContent=Math.max(0,Math.min(100,v))+'%';
+    el.classList.toggle('low',v<=20);el.classList.toggle('high',v>=80);el.classList.toggle('danger',v<=DANGER_LOW||v>=DANGER_HIGH);});
+  $('#count').textContent=Math.min(idx+1,deck.length);$('#total').textContent=deck.length;$('#slot').textContent=Math.min(idx%PER_DAY+1,PER_DAY);$('#day').textContent='Day '+day;$('#wd').textContent=WD[(day-1)%5];
+}
+function previewStats(dir){
+  const c=curCard();
+  STATS.forEach((s,i)=>{const el=$('#st-'+s.k);el.classList.remove('up','down','s','m','l');
+    el.classList.remove('num');const h=el.querySelector('.hint');if(h)h.textContent='';
+    if(!dir)return; const d=effDelta(c,dir)[i]; if(!d)return;
+    el.classList.add(d>0?'up':'down', Math.abs(d)>=10?'l':Math.abs(d)>=6?'m':'s');
+    if(PX.justice===day&&h){el.classList.add('num');h.textContent=(d>0?'+':'')+d;}});
+}
+
+/* ---------- Gerard: first-time tips from the ghost of your predecessor ---------- */
+const SEEN=new Set();try{JSON.parse(localStorage.getItem('swl-tips')||'[]').forEach(x=>SEEN.add(x));}catch(e){}
+const saveSeen=()=>{try{localStorage.setItem('swl-tips',JSON.stringify([...SEEN]));}catch(e){}};
+const tipQ=[];let tipBusy=false;
+
+function tip(id,pos,at,then){if(!PREF.tips||SEEN.has(id)||tipQ.some(t=>t.id===id)||!TIPS[id])return;
+  if(!SEEN.has('intro')&&!tipQ.some(t=>t.id==='intro'))tipQ.push({id:'intro',text:TIPS.intro,pos,intro:true});
+  tipQ.push({id,text:TIPS[id],pos,at,then});pumpTip();}
+function quip(){if(!PREF.tips||tipBusy||tipQ.length||day<2||Math.random()>.12)return;tipQ.push({id:null,text:GERARD_QUIPS[Math.floor(Math.random()*GERARD_QUIPS.length)],pos:'bottom'});pumpTip();}
+function dropBottomTips(){const g=$('#gerard');if(!g.hidden&&g.classList.contains('bottom')){g.hidden=true;tipBusy=false;}for(let i=tipQ.length-1;i>=0;i--)if((tipQ[i].pos||'bottom')==='bottom')tipQ.splice(i,1);}
+// Gerard's tips are modal: nothing behind him reacts until you press his button.
+const warnOpen=()=>!$('#warn').hidden;
+const tipModal=()=>{const g=$('#gerard');return warnOpen()||(!g.hidden&&g.classList.contains('modal'));};
+{const g=$('#gerard'),sh=$('#gshade');new MutationObserver(()=>{sh.hidden=!tipModal();}).observe(g,{attributes:true,attributeFilter:['hidden','class']});new MutationObserver(()=>{sh.hidden=!tipModal();}).observe($('#warn'),{attributes:true,attributeFilter:['hidden']});
+ sh.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const tg=warnOpen()?$('#warn'):g;tg.classList.remove('nudge');void tg.offsetWidth;tg.classList.add('nudge');const b=warnOpen()?$('#w-ok'):$('#g-ok');b&&b.focus({preventScroll:true});});}
+function pumpTip(){if(tipBusy||!tipQ.length)return;
+  const blocked=!$('#toast').hidden||!$('#warn').hidden;if(blocked){setTimeout(pumpTip,500);return;}
+  const t=tipQ.shift();if((t.id&&SEEN.has(t.id))||(t.at!==undefined&&t.at!==idx)){pumpTip();return;}tipBusy=true;if(t.id){SEEN.add(t.id);saveSeen();}
+  const g=$('#gerard'),ch=CHARS.ghost;
+  g.className='gerard '+(t.pos||'bottom')+(t.intro?' intro':'')+(t.id?' modal':'');SND.ghost&&SND.ghost(!!t.intro);
+  g.innerHTML=`${ch.svg}<div class="gb"><b>${t.intro?'👻 A ghost appears':ch.name.split(',')[0]+(t.id?' · tip':'')}</b><p>${N(t.text)}</p>
+    <div class="gbtn"><button type="button" id="g-ok">${t.intro?'Nice to meet you, '+escH(GHOST):t.then?'Show me the card':'Got it'}</button>${t.id&&!t.intro?'<button type="button" id="g-off" class="ghostly">No more tips</button>':''}</div></div>`;
+  g.hidden=false;if(t.id)setTimeout(()=>{const b=$('#g-ok');b&&b.focus({preventScroll:true})},50);
+  const done=()=>{g.hidden=true;tipBusy=false;if(t.then){const f=t.then;t.then=null;f();}setTimeout(pumpTip,350);};
+  $('#g-ok').onclick=done;const off=$('#g-off');if(off)off.onclick=()=>{PREF.tips=false;savePref();tipQ.length=0;done();};
+  if(!t.id)setTimeout(()=>{if(!g.hidden&&g.querySelector('#g-ok'))done();},5000);
+}
+/* ---------- pacts (supernatural night visitors) ---------- */
+const PACT_STAT=i=>STATS[i].ico;
+const baseDelta=(c,dir)=>dir==='M'?c.L.map((v,i)=>Math.round((v+c.R[i])/2)):c[dir].slice();
+const stakes=()=>(typeof STAKES!=='undefined'&&STAKES[Math.min(day-1,STAKES.length-1)])||1;
+function effDelta(c,dir,base){const k=practicing?1:stakes();const a=(base?base.slice():baseDelta(c,dir)).map(v=>Math.round(v*k));
+  if(PX.freeze&&PX.freeze.day===day)a[PX.freeze.i]=0;
+  if(PX.debt&&PX.debt.day===day)a[PX.debt.i]*=2;
+  if(PX.earth===day&&a[1]>0)a[1]=Math.round(a[1]*1.5);
+  if(PX.rally)a[2]+=3;
+  return a;}
+function forced(){
+  if(idx>=deck.length)return null;
+  if(practicing)return null;
+  const k=deck[idx],c=CARDS[k],pr=promises.get(k);
+  if(pr)return{dir:pr,why:'promise'};
+  if(PX.earth===day&&c.R[1]<0)return{dir:'L',why:'earth'};
+  if(PX.justice===day&&(c.eu==='R'||c.eu==='L'||c.eu==='M'))return{dir:c.eu,why:'justice'};
+  return null;}
+const FORCE_MSG={promise:d=>d==='R'?'You promised to approve this one, {name}. A deal is a deal.':'You promised to reject this one, {name}. The patchouli envelope remembers.',
+  earth:()=>'Mother Earth is watching, {name}. Not today.',justice:()=>'Lady Justice shakes her head. Brussels chose otherwise, {name}.'};
+const compLeft=()=>(PX.compDay!==day?1:0)+(PX.charges.comp||0);
+function canM(){if(practicing||idx>=deck.length||day<UNLOCK.compromise)return false;const c=curCard();if(c.eu!=='M')return false;const f=forced();if(f)return f.dir==='M';return compLeft()>0;}
+function updateM(){const c=idx<deck.length&&curCard();const on=!!c&&c.eu==='M'&&!!$('#top')&&day>=UNLOCK.compromise;document.body.classList.toggle('hasM',on);const b=$('#btnM');if(!b)return;b.disabled=!canM();const f=forced();
+  $('#mLeft').textContent=f&&f.dir==='M'?'Justice: free':compLeft()>0?`${compLeft()} left`:'none left · shop';}
+const FORCE_TAG={earth:'🌍 Mother Earth forbids approval',justice:d=>d==='R'?'⚖️ Justice: Brussels approved':d==='M'?'⚖️ Justice: Brussels compromised':'⚖️ Justice: Brussels rejected'};
+function cardPhase(){return !!$('#top')&&!layer.innerHTML&&!ovl.innerHTML&&!busy&&idx<deck.length;}
+function updatePacts(){
+  const el=$('#pacts');if(!el||!PX.charges)return;const t=[],ph=cardPhase();
+  const today=(on,txt,soon)=>t.push(`<span class="pc${soon?' soon':''}">${txt}</span>`);
+  if(PX.freeze){if(PX.freeze.day===day)today(1,`😈 ${PACT_STAT(PX.freeze.i)} frozen`);else if(PX.freeze.day>day)today(1,`😈 ${PACT_STAT(PX.freeze.i)} frozen tomorrow`,1);}
+  if(PX.debt&&PX.debt.day===day)today(1,`😈 ${PACT_STAT(PX.debt.i)} counts double today`);
+  if(PX.earth===day)today(1,'🌍 Climate +50% · no harm');else if(PX.earth>day)today(1,'🌍 Mother Earth tomorrow',1);
+  if(PX.justice===day)today(1,'⚖️ Exact effects · follow Brussels');else if(PX.justice>day)today(1,'⚖️ Lady Justice tomorrow',1);
+  const C=PX.charges;
+  if(C.rewind)t.push(`<button class="pc" type="button" data-pact="rewind" ${ph&&PX.snap&&PX.snap.day===day&&money>=salaryNow()?'':'disabled'} aria-label="Rewind your last decision, ${C.rewind} left">⏳ Rewind <b>${C.rewind}</b></button>`);
+  if(C.ghost)t.push(`<button class="pc" type="button" data-pact="ghost" ${ph&&PX.ghostAt!==idx?'':'disabled'} aria-label="Ask the ghost, ${C.ghost} left">👻 Ghost <b>${C.ghost}</b></button>`);
+  if(C.rally)t.push(`<button class="pc" type="button" data-pact="rally" ${ph&&!PX.rally?'':'disabled'} aria-label="Call a rally, ${C.rally} left">✊ ${PX.rally?'Rally on!':'Rally'} <b>${C.rally}</b></button>`);
+  el.innerHTML=t.join('');}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pact]');if(!b||b.disabled||!cardPhase())return;
+  const k=b.dataset.pact,c=curCard();
+  if(k==='ghost'){PX.charges.ghost--;PX.ghostAt=idx;SND.chime&&SND.chime();
+    toastText(N(c.eu==='R'?'👻 “Brussels said yes to this one, {name}.”':c.eu==='L'?'👻 “Brussels said no. Firmly.”':c.eu==='M'?'👻 “Brussels went for a compromise. As always.”':'👻 “This one never reached Brussels. I’d know.”'));}
+  if(k==='rally'){PX.charges.rally--;PX.rally=true;PX.unrest++;toastText('✊ The crowd is with you on this one: +3 Trust, whatever you choose.');previewStats(null);}
+  if(k==='rewind'&&PX.snap){const z=PX.snap;PX.snap=null;PX.charges.rewind--;
+    S={...z.S};idx=z.idx;deck=z.deck;promises=z.promises;dayLog=z.dayLog;dayMatch=z.dayMatch;pending=z.pending;PX.rally=z.rally;PX.compDay=z.compDay;PX.charges.comp=z.comp;money=z.money;PX.curse=z.curse;inf=z.inf;
+    money-=salaryNow();heat+=8;SND.swipe&&SND.swipe();renderCards(true);updateStats();
+    toastText(N(`⏳ Time folds back, {name}. That cost you ${eur(salaryNow())} and a few raised eyebrows.`));}
+  updatePacts();});
+
+function pickPact(){
+  const fits=d=>!CARDS[d].follow&&!promises.has(d)&&CARDS[d].R[3]>0;
+  const pool=PACTS.filter(p=>!PX.used.includes(p.id)&&(p.kind!=='contract'||deck.filter((d,k)=>k>=idx&&fits(d)).length>=2));
+  return pool.length?pool[Math.floor(Math.random()*pool.length)]:null;}
+function pactOffer(p,nextDay){
+  SND.chime();tip('pact','top');PX.used.push(p.id);const ch=CHARS[p.char],tom=day+1;
+  layer.innerHTML=`<div class="veil letter night"><div class="modal evt" role="dialog" aria-modal="true" aria-labelledby="pk-t">
+    <div class="kicker">Day ${day} · midnight</div>
+    <h3 id="pk-t">Someone is sitting in your chair…</h3>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div><div class="hi" data-type>${N(ch.hello)}</div></div></div>
+    <div class="block"><div class="from">A pact</div><h4 style="font-size:17px">${p.title}</h4>
+      <p class="offer" data-type>${N(p.text)}</p>
+      <div class="terms"><div><span>✨</span><span>${p.gift}</span></div><div><span>⚠️</span><span>${p.price}</span></div></div>
+      <div class="opts" id="pk-opts"><button class="acc" id="evA" type="button">Seal the pact</button><button id="evD" type="button">Not tonight</button></div></div>
+  </div></div>`;
+  typeIn(layer.querySelector('.modal'));
+  $('#evD').onclick=()=>nextDay();
+  $('#evA').onclick=()=>{
+    PX.sealed.push(p.id);
+    if(p.kind==='freeze'){$('#pk-opts').outerHTML=`<p class="offer" style="margin-top:12px">“Which worry, ${N('{name}')}?”</p><div class="pickbar">${STATS.map((st,i)=>`<button type="button" data-fz="${i}">${st.ico} ${st.lbl}</button>`).join('')}</div>`;
+      layer.querySelectorAll('[data-fz]').forEach(b=>b.onclick=()=>{const i=+b.dataset.fz;PX.freeze={i,day:tom};
+        if(Math.random()<.5)PX.debt={i,day:tom+1};else PX.curse=(PX.curse||0)+2;
+        setTimeout(()=>toastText(`😈 Tomorrow ${STATS[i].lbl} won’t budge. And the price? You’ll find out.`),400);nextDay();});
+      layer.querySelector('[data-fz]').focus({preventScroll:true});return;}
+    if(p.kind==='contract'){money+=p.cash;heat+=p.heat;bonus+=2;
+      const fits=d=>!CARDS[d].follow&&!promises.has(d)&&CARDS[d].R[3]>0;const got=[];
+      for(let k=idx;k<deck.length&&got.length<2;k++){if(fits(deck[k])){promises.set(deck[k],'R');got.push(CARDS[deck[k]].title);}}
+      setTimeout(()=>toastText(`🟡 Signed. You must approve: “${got.join('” and “')}”.`),400);}
+    if(p.kind==='earth'){PX.earth=tom;setTimeout(()=>toastText('🌍 Tomorrow nature thanks you double. Don’t betray her.'),400);}
+    if(p.kind==='justice'){PX.justice=tom;setTimeout(()=>toastText('⚖️ Tomorrow you will see everything. And follow Brussels.'),400);}
+    if(p.id==='socialist')indexed=true;
+    if(p.kind==='charges'){PX.charges[p.use]+=p.charges;setTimeout(()=>toastText(p.use==='comp'?'⇅ One extra compromise. Use it on a dossier where Brussels really compromised.':`${p.ico} You can use “${p.label}” ${p.charges} times. Look above the card.`),400);}
+    updatePurse();nextDay();};
+}
+function pactMorning(){
+  if(PX.charges&&PX.charges.ghost>0){S.trust-=1;setTimeout(()=>toastText('👻 Your staff heard moaning in your office again. Trust −1.'),600);}
+}
+function showWorld(w,next){
+  apply(w.eff);
+  layer.innerHTML=paper({edition:'Special edition',kick:w.kick,head:w.head,
+    sub:'Meanwhile, outside the Berlaymont…',
+    photo:w.img?`<img class="art" src="${w.img}" alt="">`:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="80" font-size="64" text-anchor="middle">${w.ico}</text></svg>`,
+    cap:'Archive photo. The photographer didn’t dare get closer.',
+    body:`<p>${w.text}</p><p class="real"><i>This really happened:</i> ${w.real}</p>`,
+    box:`<div class="np-box"><b>Consequences</b>${fx(w.eff)}</div>`,foot:'Weather: changeable, like public opinion.'});
+  const b=$('#cont');b.textContent='Fold the paper';b.focus({preventScroll:true});
+  b.onclick=()=>{const d=deadStat();if(d){layer.innerHTML='';return gameOver(d);}next();};
+}
+
+/* ---------- cards ---------- */
+function negotiate(c){
+  const f=forced(),forcedReal=f&&f.dir==='M'&&f.why==='justice';
+  if(PX.curseAt!==idx){PX.curseAt=idx;PX.curseHit=PX.curse>0&&Math.random()<.5;if(PX.curseHit)PX.curse--;}
+  const cursed=PX.curseHit;
+  const ds=shuffle(DEALS[c.id].map((d,i)=>({...d,i})));let ghostMark=-1;
+  const draw=()=>{
+    ovl.innerHTML=`<div class="veil letter nego${cursed?' cursed':''}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ng-h">
+      <div class="kicker">${cursed?'😈 The Devil’s fine print':'Late-night trilogue · '+c.title}</div>
+      <h3 id="ng-h">${cursed?'Three contracts. All the same. Or are they?':'Pick the deal you can live with'}</h3>
+      ${cursed?'<p style="margin:4px 0 0;font:italic 400 14px/1.4 var(--f-body)">The ink is still warm. The words keep sliding off the page.</p>':`<p style="margin:4px 0 0;font:400 14px/1.4 var(--f-body)">One of these is what Brussels really did. Guess right for a small reward.</p>`}
+      <div class="deals">${ds.map((d,k)=>cursed
+        ?`<button class="deal cursed" type="button" data-deal="${k}"><b>Sign here.</b><span class="dd">Terms and conditions apply. The terms are the conditions. The conditions are mine.</span>${ghostMark===k?'<span class="gh">👻 “This one.”</span>':''}</button>`
+        :`<button class="deal" type="button" data-deal="${k}" ${forcedReal&&!d.real?'disabled':''}><b>${d.t}</b><span class="dd">${d.d}</span>${fx(effDelta(c,'M',d.e))}${ghostMark===k?'<span class="gh">👻 “Brussels went for this one.”</span>':''}</button>`).join('')}</div>
+      ${forcedReal?'<p class="mini" style="margin:4px 0">⚖️ Lady Justice only lets you sign what Brussels signed.</p>':''}
+      ${PX.charges.ghost>0&&ghostMark<0?`<button class="ghostbtn" type="button" id="ng-ghost">👻 Ask the ghost (${PX.charges.ghost} left)</button>`:''}
+      <button class="next" id="ng-x" type="button" style="margin-top:10px">Back to the card</button></div></div>`;
+    ovl.querySelectorAll('[data-deal]').forEach(b=>b.onclick=()=>pick(ds[+b.dataset.deal]));
+    const g=$('#ng-ghost');if(g)g.onclick=()=>{PX.charges.ghost--;ghostMark=ds.findIndex(d=>d.real);draw();updatePacts();};
+    $('#ng-x').onclick=()=>closeOvl();
+    (ovl.querySelector('.deal:not(:disabled)')||$('#ng-x')).focus({preventScroll:true});
+  };
+  const pick=d=>{
+    const real=DEALS[c.id].find(x=>x.real);
+    ovl.querySelector('.modal').innerHTML=`<div class="kicker">${cursed?'😈 What you actually signed':'The deal is done'}</div>
+      <h3>${d.t}</h3>${cursed?`<p style="margin:4px 0 0;font:400 14px/1.4 var(--f-body)">${d.d}</p>`:''}${fx(effDelta(c,'M',d.e))}
+      <div class="verdictbox ${d.real?'yes':'info'}">${d.real?'✅ <b>This is what Brussels really did!</b><br>Reward: +€2k and +1 Trust.':`ℹ️ Your own deal. For the record, Brussels chose:<br><b>${real.t}</b>`}</div>
+      <button class="next" id="ng-ok" type="button">Seal it</button>`;
+    if(d.real)SND.chime();else SND.paper();$('#ng-ok').focus({preventScroll:true});
+    $('#ng-ok').onclick=()=>{closeOvl();decide('M',d);};
+  };
+  draw();
+}
+function readCard(c){
+  const s=SECTORS[c.sector], q=QUIPS[c.title]||c.quip, port=$('#top .portrait');
+  SND.tap&&SND.tap();
+  ovl.innerHTML=`<div class="veil letter readpop" style="--sec:${s.c}"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="rp-h">
+    <div class="kicker">${c.follow?'Follow-up':'Dossier'} · ${s.t} · ${c.year||''}</div>
+    <div class="rp-who">${port?port.innerHTML:face(c)}<div><div class="rp-name">${c.name}</div><div class="rp-role">${c.role}</div></div></div>
+    ${q?`<p class="rp-quip">“${N(q)}”</p>`:''}
+    <h3 id="rp-h">${c.title}</h3>
+    <p class="rp-ask">${N(c.ask)}</p>
+    <button class="next" id="rp-back" type="button">Back to the card</button></div></div>`;
+  const v=ovl.querySelector('.veil');v.addEventListener('click',e=>{if(e.target===v)closeOvl();});
+  $('#rp-back').onclick=closeOvl;$('#rp-back').focus({preventScroll:true});
+}
+const inkDark=hex=>{const h=hex.replace('#','');const [r,g,b]=[0,2,4].map(i=>parseInt(h.substr(i,2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*r+.7152*g+.0722*b>.36;};
+// Gerard in a former player's body: a freelance lobbyist who takes over a few dossiers in later games.
+function bodyName(){try{return localStorage.getItem('swl-body')||'';}catch(e){return '';}}
+const inBody=c=>!!(c&&PX.body&&PX.body.includes(c.id));
+function bodyView(c){const who=bodyName(),q=BODY_QUIPS[(c.id.length+who.length)%BODY_QUIPS.length].replace(/\{org\}/g,(c.org||'').replace(/\s*\(.*?\)\s*/g,''));
+  return {name:'Gerard Loby',role:`Freelance lobbyist, all sectors (in ${escH(who)}’s body)`,quip:q,face:face({...c,char:null,artUrl:null,name:who,faceSeed:who+'-body'})};}
+function cardHTML(c,n){
+  const s=SECTORS[c.sector];
+  const promised=promises.get(CARDS.indexOf(c));
+  const lab0=c.crisis?`<strong class="crisis">⚠ Crisis</strong>No good way out · ${c.year}`:c.practice?`<strong>Practice</strong>With ${escH(GHOST)}`:c.follow?`<strong class="fu">Follow-up · ${{angry:'angry return',alt:'new proposal',counter:'counter-move'}[c.kind]}</strong>Re: ${c.parent}`:`<strong>Dossier ${String(n).padStart(3,'0')}</strong>Meeting · ${c.year}`;
+  const lab=lab0+(promised?`<br><span class="promise-tag">${promised==='R'?'🤝 You promised to approve':'✋ You promised to reject'}</span>`:'');
+  return `<div class="head"><div class="dossier">${lab}</div>
+    <div class="badge${inkDark(s.c)?"":" inv"}" style="--sc:${s.c};font-size:${s.t.length>10?6.4:s.t.length>8?7.3:8.5}px"><div><span>${s.img?`<img class="sg" src="${s.img}" alt="">`:s.g}</span>${s.t}</div></div></div>
+   ${(()=>{const B=inBody(c)?bodyView(c):null,q=B?B.quip:(QUIPS[c.title]||c.quip);return `<div class="portrait">${B?B.face:face(c)}</div>
+   <div class="who"><div class="name">${B?B.name:c.name}</div><div class="role">${B?B.role:c.role}</div></div>
+   ${q?`<div class="quip"><span data-type>“${N(q)}”</span></div>`:''}`;})()}
+   <div class="body" role="button" tabindex="-1" aria-label="Read the full dossier"><h2>${c.title}</h2><p>${N(c.ask)}</p><span class="zoom" aria-hidden="true">⤢ Read</span></div>
+   <span class="fold"></span><div class="stamp ok">Approved</div><div class="stamp no">Rejected</div><div class="stamp mid">Watered down</div>`;
+}
+const SECRETARY=['Four of them are already in the corridor. One brought cake.','The coffee’s run out. The lobbyists brought their own barista.',
+ 'Someone asks if you have "just a minute". He has a 140-slide PowerPoint.','Your diary is full. Two lobbyists claim to be twins, so one meeting.',
+ 'There’s a whiff of expensive aftershave in the waiting room.','Reception reports: three bouquets, one fruit basket, zero senders.'];
+const SLOTS=['09:00','11:00','14:00','16:00'];
+// Begin van de dag: lege bureaustoel tot je op de knop drukt.
+// The practice card comes on its own, before the first diary: only that one card on the desk.
+const needsPractice=()=>day===1&&idx===0&&!practiced&&PREF.tips&&(PRACTICE_ALWAYS||!SEEN.has('practiceDone'));
+function startPractice(){
+  practicing=true;document.body.classList.add('practice');document.body.classList.remove('gated');$('.rcwrap').hidden=true;stage.innerHTML='';updateStats();
+  if(!SEEN.has('practice'))tip('practice','mid',undefined,()=>{renderCards(true);updateStats();});else{renderCards(true);updateStats();}
+}
+function gate(){
+  dropBottomTips();
+  if(inGame)saveGame();
+  busy=true;$('.rcwrap').hidden=true;document.body.classList.add('gated');setSheet(false);updateStats();
+  // the ghost's ritual: one harmless-looking request per morning
+  if(PX.ghostPath&&day>=2&&PX.ritualNext<=4&&PX.ritualDay!==day&&deck.length-idx>1&&!deck.slice(idx).some(k=>CARDS[k].ritual)){const rk=CARDS.findIndex(c=>c.ritual===PX.ritualNext);
+    if(rk>-1){PX.ritualDay=day;PX.ritualNext++;deck.splice(idx+Math.floor(Math.random()*Math.min(PER_DAY,deck.length-idx)),0,rk);}}
+  // the Brotherhood's quiet request slips into today's agenda, looking like any other visitor
+  if(typeof QUEST_CHANCE!=='undefined'&&day>=SECRET_FROM&&!PX.questSeen&&deck.length-idx>2&&Math.random()<QUEST_CHANCE){const qk=CARDS.findIndex(c=>c.quest==='weed');
+    if(qk>-1){PX.questSeen=true;deck.splice(idx+1+Math.floor(Math.random()*Math.min(3,deck.length-idx-1)),0,qk);}}
+  const n=Math.min(PER_DAY,deck.length-idx);
+  let drift='';
+  if(day>=2&&(PX.driftDay||1)<day){PX.driftDay=day;apply(DRIFT);const d=deadStat();if(d){busy=false;return gameOver(d);}
+    drift=`<p class="drift"><b>Overnight:</b> ${DRIFT.map((v,i)=>v?`${STATS[i].ico} ${v>0?'+':''}${v}`:'').filter(Boolean).join(' · ')} <i>(people forget, the lobby never sleeps)</i></p>`;}
+  if(inGame)saveGame();
+  const dreamPick=false; // dream choice replaced by the Secret list
+  stage.innerHTML=`<div class="gate"><div class="agenda">
+    <div class="ag-kick">Diary · day ${day}</div>
+    <div class="ag-day">${WD[(day-1)%5]}</div>${stakes()>1?`<div class="ag-stakes">⚠ Stakes ×${stakes().toFixed(stakes()%1?2:0).replace(/0$/,'')}</div>`:''}
+    ${drift}<ol>${SLOTS.slice(0,n).map((t,i)=>{const c=CARDS[deck[idx+i]];return `<li${c.crisis?' class="crisis"':''}><span>${t}</span><span class="who"><b>${c.org||'Unknown visitor'}</b><i>${inBody(c)?'Gerard Loby':c.name}</i></span></li>`;}).join('')}</ol>
+    <p class="sec"><b>Secretariat:</b> Good morning, ${N('{name}')}. ${SECRETARY[(day-1)%SECRETARY.length]}</p>
+    ${dreamPick?`<div class="dreams"><div class="dr-h">What’s your dream, ${N('{name}')}?</div>${Object.entries(DREAMS).map(([k,d])=>`<button type="button" class="dream" data-dream="${k}"><span class="fi">${d.ico}</span><span class="ft"><b>${d.name}</b><small>${d.pitch}</small><small class="fp">Needs: ${d.need}</small></span></button>`).join('')}</div>`
+      :`${PX.dream?`<p class="dr-now">${DREAMS[PX.dream].ico} Your dream: <b>${DREAMS[PX.dream].name}</b> · ${dreamProg().txt}</p>`:''}<button class="next" id="open" type="button">Open the door: let them in</button>`}
+    ${day>=UNLOCK.shop?`<button class="shopbtn" id="shop" type="button">🛍 Go shopping first (${eur(money)})</button>`:''}</div></div>`;
+  if($('#shop'))$('#shop').onclick=()=>{tip('shop','top');shop();};
+  if(dreamPick){tip('dream','top');stage.querySelectorAll('[data-dream]').forEach(b=>b.onclick=()=>{PX.dream=b.dataset.dream;SND.chime&&SND.chime();busy=false;gate();});if(day===2)tip('day2','top');return;}
+  if(drift)tip('drift','top');
+  if(PX.dream&&(day===3||day===5)){const id='dreamr'+day;TIPS[id]=dreamNudge();tip(id,'top');}
+  if(CARDS[deck[idx]]&&CARDS[deck[idx]].crisis)tip('crisis','top');
+  if(day===2)tip('day2','top');
+  if(stakes()>1&&TIPS.stakes)tip('stakes','top');
+  const b=$('#open');b.focus({preventScroll:true});
+  {const k=secretDue();if(k)PX.pendingSecret=k;}
+  b.onclick=()=>{SND.knock();document.body.classList.remove('gated');
+    $('.rcwrap').hidden=false;renderCards(true);updateStats();const sk=PX.pendingSecret;if(sk){PX.pendingSecret=null;setTimeout(()=>revealSecret(sk),500);}};
+}
+// The speech bubble steps aside a few seconds after the line is typed, so the request text gets the room.
+// Order on the card: first the lobbyist speaks (bubble), then the bubble fades and the request text appears.
+function revealBody(el){
+  if(!el.classList.contains('intro'))return;
+  el.classList.remove('intro');
+  const body=el.querySelector('.body');
+  if(body&&body.animate)body.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:600,easing:'ease-out'});
+}
+function hideQuip(el){const q=el.querySelector('.quip');if(!q){revealBody(el);return;}clearTimeout(el._qt);el._qt=setTimeout(()=>{
+    if(!el.isConnected)return;
+    // Script-driven animation so the CSS pop-in animation can't snap it away.
+    if(!q.animate){q.style.display='none';revealBody(el);return;}
+    const fade=q.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-4px)'}],{duration:1400,easing:'ease-in-out',fill:'forwards'});
+    fade.onfinish=()=>{if(!el.isConnected)return;q.style.display='none';revealBody(el);};
+  },1800);}
+// Crisis clock: a few seconds to decide. Paused while a tip, warning or overlay is open.
+let frozeNow=false;
+function crisisClock(el,c){
+  const total=(typeof CRISIS_SECONDS!=='undefined'?CRISIS_SECONDS:5)*1000;let left=total;
+  el.insertAdjacentHTML('beforeend','<div class="ctimer" aria-hidden="true"><i></i></div><div class="csecs" role="timer" aria-live="off"></div>');
+  const bar=el.querySelector('.ctimer i'),sec=el.querySelector('.csecs');let lastS=-1;
+  const iv=setInterval(()=>{
+    if($('#top')!==el||busy&&!el.isConnected){clearInterval(iv);return;}
+    if(busy||tipModal()||layer.innerHTML||ovl.innerHTML)return;
+    left-=100;const f=Math.max(0,left/total);bar.style.transform=`scaleX(${f})`;const s=Math.ceil(left/1000);
+    if(s!==lastS){lastS=s;sec.textContent='⏱ '+Math.max(0,s);if(s<=3&&s>0)SND.knock&&SND.knock();el.classList.toggle('hurry',s<=2);}
+    if(left<=0){clearInterval(iv);
+      const opts=['L','R'].map(d=>({d,v:effDelta(c,d).reduce((a,x,i)=>a+(i===3?0:x),0)})).sort((a,b)=>a.v-b.v);
+      frozeNow=true;decide(opts[0].d);
+      setTimeout(()=>toastText('⏱ Too slow! You froze, so the worst option happened anyway. Trust −'+(typeof CRISIS_FREEZE!=='undefined'?CRISIS_FREEZE:3)+'.'),700);}
+  },100);
+}
+function renderCards(deal){
+  stage.innerHTML='';
+  const left=Math.min(PER_DAY-idx%PER_DAY,deck.length-idx)-1; // only today’s dossiers on the pile
+  if(practicing){}
+  else if(left>=2){const b2=document.createElement('div');b2.className='card back back2'+(deal?' deal-b':'');stage.appendChild(b2)}
+  if(!practicing&&left>=1){const b=document.createElement('div');b.className='card back'+(deal?' deal-b':'');b.innerHTML=cardHTML(CARDS[deck[idx+1]],idx+2);stage.appendChild(b)}
+  const c=curCard();
+  const el=document.createElement('div');el.className='card'+(deal?' deal':'');el.id='top';el.innerHTML=cardHTML(c,idx+1);
+  el.setAttribute('role','group');el.setAttribute('aria-label',c.title);
+  stage.appendChild(el);
+  {const f=forced(),pr=f&&f.dir;el.classList.toggle('promisedR',pr==='R');el.classList.toggle('promisedL',pr==='L');el.classList.toggle('promisedM',pr==='M');document.body.classList.toggle('lockL',pr==='R'||pr==='M');document.body.classList.toggle('lockR',pr==='L'||pr==='M');
+   if(f&&f.why!=='promise'){const t=FORCE_TAG[f.why];el.querySelector('.dossier').insertAdjacentHTML('beforeend',`<br><span class="promise-tag pact">${typeof t==='function'?t(f.dir):t}</span>`);}}
+  fillSheet(c);setSheet(false);bindDrag(el);busy=false;updatePacts();updateM();
+  if(c.crisis&&!practicing)crisisClock(el,c);
+  updateSecTab();
+  {const n=idx%PER_DAY;let t=null;
+   if(practicing){setTimeout(()=>{tip('card2','bottom');},1400);}else{
+   if(day===1)t=(practiced?['card3',null,null,null]:['card1','card2','card3',null])[n];
+   const f=forced();if(f&&f.why==='promise')t=SEEN.has('promise')?t:'promise';else if(document.body.classList.contains('hasM'))t=SEEN.has('compromise')?t:'compromise';
+   const at=idx;setTimeout(()=>{if(idx!==at)return;if(t&&!SEEN.has(t))tip(t,'bottom',at);else quip();},1400);}}
+  typeIn(el,()=>hideQuip(el));
+}
+
+function bindDrag(el){
+  let x0=0,y0=0,dx=0,dy=0,down=false,t0=0;
+  const ok=el.querySelector('.stamp.ok'),no=el.querySelector('.stamp.no'),mid=el.querySelector('.stamp.mid');
+  let raf=0,lastDir;
+  const set=()=>{raf=0;const rot=dx/14, rx=-dy/40, ry=dx/30;
+    el.style.transform=`perspective(900px) translate3d(${dx}px,${dy*.4}px,0) rotate(${rot}deg) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    const up=-dy>40&&Math.abs(dx)<50&&canM();
+    const p=Math.min(1,Math.abs(dx)/110); ok.style.opacity=!up&&dx>0?p:0; no.style.opacity=!up&&dx<0?p:0; if(mid)mid.style.opacity=up?Math.min(1,(-dy-40)/80):0;
+    const d=up?'M':Math.abs(dx)>24?(dx>0?'R':'L'):null; if(d!==lastDir){lastDir=d;previewStats(d);}};
+  const schedule=()=>{if(!raf)raf=requestAnimationFrame(set);};
+  let onBody=false;
+  el.addEventListener('pointerdown',e=>{if(busy)return;onBody=!!e.target.closest('.body');down=true;x0=e.clientX;y0=e.clientY;t0=performance.now();el.setPointerCapture(e.pointerId);el.classList.add('dragging');el.classList.remove('anim')});
+  el.addEventListener('pointermove',e=>{if(!down)return;dx=e.clientX-x0;dy=e.clientY-y0;schedule()},{passive:true});
+  const end=()=>{if(!down)return;down=false;if(raf){cancelAnimationFrame(raf);raf=0;}lastDir=undefined;el.classList.remove('dragging');
+    const v=Math.abs(dx)/Math.max(1,performance.now()-t0);
+    if(-dy>110&&Math.abs(dx)<60&&canM()){decide('M');}
+    else if(Math.abs(dx)>100||(Math.abs(dx)>40&&v>.5)){decide(dx>0?'R':'L');}
+    else{if(mid)mid.style.opacity=0;const tap=onBody&&Math.abs(dx)<8&&Math.abs(dy)<8&&performance.now()-t0<450;el.classList.add('anim');dx=dy=0;el.style.transform='';ok.style.opacity=no.style.opacity=0;previewStats(null);if(tap&&!busy)readCard(curCard());}};
+  el.addEventListener('pointerup',end);
+  el.querySelector('.body').tabIndex=0;el.querySelector('.body').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!busy){e.preventDefault();readCard(curCard());}});el.addEventListener('pointercancel',end);
+}
+
+function decide(dir,deal){if(tipModal())return;
+  if(busy||ovl.innerHTML)return;
+  if(practicing){if(dir==='M'||!$('#top'))return;busy=true;const g=$('#gerard');g.hidden=true;tipBusy=false;tipQ.length=0;
+    const el=$('#top'),c=PRACTICE;el.classList.add('anim');el.querySelector(dir==='R'?'.stamp.ok':'.stamp.no').style.opacity=1;SND.swipe();SND.stamp(dir==='R');
+    el.style.transform=`translate3d(${dir==='R'?520:-520}px,40px,0) rotate(${dir==='R'?28:-28}deg)`;el.style.opacity=0;previewStats(null);
+    const dd=c[dir].slice();STATS.forEach((s,i)=>S[s.k]+=dd[i]);dayStart={...S};updateStats();if(dir==='L'){PX.ghostPath=true;PX.ritual=0;PX.ritualNext=1;}
+    setTimeout(()=>{practicing=false;practiced=true;document.body.classList.remove('practice');stage.innerHTML='';toast(c,dir,dd);gate();updateStats();
+      if(dir==='L')tip('coffeeNo','top');tip('practiceDone','top');},300);return;}
+  {const g=$('#gerard');if(!g.hidden&&g.classList.contains('bottom')&&!g.classList.contains('intro')){g.hidden=true;tipBusy=false;setTimeout(pumpTip,600);}}
+  const f=forced(),pr=f&&f.dir;
+  if(dir==='M'&&!canM()){toastText(curCard().eu!=='M'?'No compromise possible here: Brussels didn’t compromise on this one.':'No compromise left today. Buy a late-night trilogue in the shop.');return;}
+  if(dir==='M'&&!deal&&typeof DEALS!=='undefined'&&DEALS[curCard().id]&&(!pr||pr==='M')){previewStats(null);const t=$('#top');if(t){t.classList.add('anim');t.style.transform='';t.querySelectorAll('.stamp').forEach(x=>x.style.opacity=0);}return negotiate(curCard());}
+  if(pr&&dir!==pr){const el=$('#top');if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');el.style.transform='';el.querySelectorAll('.stamp').forEach(x=>x.style.opacity=0);}previewStats(null);
+    SND.stamp(false);toastText(N(FORCE_MSG[f.why](pr)));return;}
+  PX.snap={S:{...S},idx,deck:deck.slice(),promises:new Map(promises),dayLog:dayLog.slice(),dayMatch,pending:pending.slice(),rally:PX.rally,day,compDay:PX.compDay,comp:PX.charges.comp,money,curse:PX.curse,inf};
+  if(dir==='M'&&!(f&&f.dir==='M')){if(PX.compDay!==day)PX.compDay=day;else PX.charges.comp--;}
+  busy=true;updatePacts();promises.delete(deck[idx]);document.body.classList.remove('lockL','lockR');
+  const el=$('#top'),c=curCard();
+  el.classList.add('anim');
+  el.querySelector(dir==='R'?'.stamp.ok':dir==='M'?'.stamp.mid':'.stamp.no').style.opacity=1;SND.swipe();if(dir!=='M')SND.stamp(dir==='R');else if(deal&&deal.real)SND.stamp(true);
+  el.style.transform=dir==='M'?'translate3d(0,-640px,0) rotate(-3deg)':`translate3d(${dir==='R'?520:-520}px,40px,0) rotate(${dir==='R'?28:-28}deg)`;el.style.opacity=0;
+  previewStats(null);
+  const dd=effDelta(c,dir,deal&&deal.e);PX.rally=false;
+  if(frozeNow){dd[2]-=(typeof CRISIS_FREEZE!=='undefined'?CRISIS_FREEZE:3);frozeNow=false;}
+  if(deal&&deal.real){dd[2]+=1;money+=2;}
+  const ip=day>=UNLOCK.inflation?((INFL[c.id]||{})[dir]||0):0; if(ip){inf+=ip;}
+  STATS.forEach((s,i)=>S[s.k]+=dd[i]);
+  PX.calm=c.crisis?0:(STATS.every(s=>S[s.k]>=30&&S[s.k]<=70)?(PX.calm||0)+1:0);
+  if(deal?deal.real:c.eu===dir){dayMatch++;matchTotal++;}
+  hist.push({c,dir,dd,day});
+  if(c.quest==='weed'&&dir==='R'){PX.questOk=true;PX.weedTonight=true;}
+  if(c.ritual&&dir==='R'){PX.ritual=(PX.ritual||0)+1;if(c.ritual===4&&PX.ritual>=4)PX.possessed=true;
+    else setTimeout(()=>toastText(['🕯️ Somewhere in the archive, a candle lights itself.','🖼️ The portrait in the hall seems to smile. It didn’t before.','✍️ Your hand still tingles from the red ink.'][c.ritual-1]),900);}
+  dayLog.push({c,dir,dd,deal});
+  const fu=FOLLOW.find(f=>f.parent===c.title&&f.on===dir);
+  if(fu){const at=Math.min(deck.length,idx+1+2+Math.floor(Math.random()*3));deck.splice(at,0,CARDS.indexOf(fu));}
+  idx++;updateStats();setSheet(false);
+  setTimeout(()=>flow({c,dir,dd,ip}),300);
+}
+const deadStat=()=>STATS.find(s=>S[s.k]<=0||S[s.k]>=100);
+const fx=(arr,cls='deltas')=>`<div class="${cls}">${arr.map((v,i)=>v?`<span class="${v>0?'p':'n'}">${STATS[i].ico} ${v>0?'+':''}${v}</span>`:'').join('')||'<span>no direct effect</span>'}</div>`;
+function apply(arr){STATS.forEach((s,i)=>S[s.k]+=arr[i]);updateStats();}
+
+// One step at a time: game over → due "addertjes" → end of day → next card / win.
+function flow(last){
+  if(PX.possessed)return possessed();
+  const d=deadStat(); if(d)return gameOver(d); cause=null;
+  const endOfDay=idx>=deck.length||idx%PER_DAY===0;
+  if(endOfDay&&!last.dayDone)return endDay(()=>flow({...last,dayDone:true}));
+  if(idx>=deck.length)return win();
+  if(last.dayDone)return gate();
+  renderCards();updateStats();if(last.c)toast(last.c,last.dir,last.dd,last.ip);checkWarn();
+}
+
+const WEATHER=['Weather: heavy cloud over the Berlaymont, 100% chance of lobbyists.','Weather: calm, except in the meeting room.','Weather: light drizzle of amendments.','Weather: sunny, unless you drive a diesel.','Weather: thick fog around the Transparency Register.'];
+function paper({edition,kick,head,sub,photo,cap,body,box,foot,footR}){
+  SND.paper();
+  return `<div class="veil letter news"><div class="modal" lang="en" role="dialog" aria-modal="true" aria-labelledby="np-h">
+    <div class="np-top"><span>Est. 1958</span><span>Independent since yesterday</span></div>
+    <div class="np-name">The Brussels Courier</div>
+    <div class="np-bar"><span>Day ${day} · ${WD[(day-1)%5]}</span><span>${edition}</span><span>€2.50</span></div>
+    <div class="np-kick">${kick}</div>
+    <h3 class="np-head" id="np-h">${head}</h3>
+    <div class="np-sub">${sub}</div>
+    <div class="np-body"><div><div class="np-photo">${photo}</div><div class="np-cap">${cap}</div>${box}</div>
+      <div class="np-text">${body}</div></div>
+    <div class="np-foot"><span>${foot}</span><span>${footR||'Continued on page 7'}</span></div>
+    <button class="next" id="cont" type="button"></button></div></div>`;
+}
+function endDay(done){
+  if(warnOpen()){setTimeout(()=>endDay(done),300);return;}
+  dropBottomTips();
+  const diff=STATS.map(s=>S[s.k]-dayStart[s.k]);
+  const last=idx>=deck.length;
+  const pool=EVENTS.filter(e=>!usedEv.includes(e.id)&&(!e.card||deck.some((d,k)=>k>=idx&&CARDS[d].id===e.card&&!promises.has(d))));
+  const pact=!last&&day>=UNLOCK.pacts&&Math.random()<.4?pickPact():null;
+  const ev=!pact&&!last&&day>=UNLOCK.offers&&pool.length&&Math.random()<.75?pool[Math.floor(Math.random()*pool.length)]:null;
+  const nextDay=()=>{layer.innerHTML='';PX.snap=null;if(!last){day++;pactMorning();PL*=1+inf/100;inf=Math.max(1,Math.round((inf-.5)*10)/10);dayStart={...S};dayMatch=0;dayLog=[];money+=salaryNow()-mortgage();updatePurse();}done();};
+  const after=()=>pact?pactOffer(pact,nextDay):ev?offer(ev,nextDay):nextDay();
+  eveningPaper(diff,last,()=>{if(PX.weedTonight&&!secrets().includes('weed')){PX.weedTonight=false;revealSecret('weed',after);}else after();});
+}
+// One newspaper per evening: your biggest decision on the front page, everything else that happened inside.
+function eveningPaper(diff,last,done){
+  const sz=x=>(x.dd||x.c[x.dir]||[]).reduce((t,v)=>t+Math.abs(v),0);
+  const top=dayLog.slice().sort((a,b)=>sz(b)-sz(a))[0];
+  const pages=[];
+  if(top){const {c,dir,deal}=top;
+    const yours=dir==='M'?(deal?`${deal.t}. ${deal.d}`:`A compromise nobody fully likes.`):((typeof ALT!=='undefined'&&ALT[c.id]&&ALT[c.id][dir])||(dir==='R'?`“${c.title}” goes ahead. ${c.name} is already drafting the next request.`:`“${c.title}” is off the table. ${c.name} vows to be back.`));
+    pages.push({kick:SECTORS[c.sector].t.toLowerCase().replace(/^./,m=>m.toUpperCase())+' · Europe',
+      head:(NEWS[c.title]||c.news||{})[dir]||(dir==='M'?`Brussels waters down “${c.title}”: everyone half happy, nobody happy`:c.title),
+      sub:`Commissioner ${N('{name}')} ${dir==='R'?'approves':dir==='M'?'strikes a compromise on':'rejects'}: “${c.title}”`,
+      photo:face(c),cap:dir==='M'?`${c.name} leaves with half of what they came for.`:dir==='R'?`${c.name} leaves the Berlaymont smiling.`:`${c.name} slinks off after a short meeting.`,
+      body:`<p class="yours"><b>In your Europe:</b> ${N(yours)}</p><p class="real"><i>In real life:</i> ${c.what}</p>`,
+      box:`<div class="np-box"><b>Your day in numbers</b>${dayLog.length} dossiers, ${dayMatch}× same choice as Brussels${fx(diff)}</div>`,
+      foot:WEATHER[(day-1)%WEATHER.length],tag:'Front page'});}
+  // a crisis is brewing: guaranteed after a long calm streak, otherwise a small chance
+  if(!last&&day+1>=CRISIS_FROM&&PX.crisisDay!==day&&(PX.calm>=CRISIS_CALM||Math.random()<CRISIS_CHANCE)){
+    const k=CARDS.findIndex(c=>c.crisis&&!(PX.crises||[]).includes(c.id));
+    if(k>-1){const cc=CARDS[k];(PX.crises=PX.crises||[]).push(cc.id);PX.crisisDay=day;PX.calm=0;deck.splice(idx,0,k);
+      pages.push({kick:'Crisis',head:`Crisis looms: “${cc.title}”`,sub:'Things were going a little too well. That never lasts in Brussels.',
+        photo:face(cc),cap:`${cc.name}, ${cc.role.toLowerCase()}, on the way to your office.`,
+        body:`<p>Tomorrow morning, first thing: ${cc.org}. Whatever Commissioner ${N('{name}')} decides, somebody will be furious. Probably everybody.</p>`,
+        box:`<div class="np-box"><b>⚠ Crisis dossier</b>Both choices hurt. Pick the one that hurts least.</div>`,foot:'Weather: storm warning.',tag:'Crisis'});}}
+  // world news (riots first, then the regular world events)
+  let w=null;
+  if(day<UNLOCK.world){}
+  else if(PX.unrest>0&&Math.random()<Math.min(.8,.25*PX.unrest)){PX.unrest=Math.max(0,PX.unrest-2);w=RIOT;}
+  else{const x=WORLD.find(x=>!usedWorld.includes(x.id)&&x.cond(S));if(x&&Math.random()<=.7){usedWorld.push(x.id);w=x;}}
+  if(w){apply(w.eff);if(w.infl)inf+=w.infl;let extra='';
+    if(w.spawn&&!spawned.includes(w.spawn)&&!last){const k=CARDS.findIndex(c=>c.id===w.spawn);if(k>-1){spawned.push(w.spawn);deck.splice(Math.min(deck.length,idx+Math.floor(Math.random()*3)),0,k);
+      extra=`<p><b>Already queuing at your door:</b> ${CARDS[k].org}. Expect a visit soon.</p>`;}}
+    pages.push({kick:w.kick,head:w.head,sub:'Meanwhile, outside the Berlaymont…',
+      photo:w.img?`<img class="art" src="${w.img}" alt="">`:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="80" font-size="64" text-anchor="middle">${w.ico}</text></svg>`,
+      cap:'Archive photo. The photographer didn’t dare get closer.',
+      body:`<p>${w.text}</p>${extra}<p class="real"><i>This really happened:</i> ${w.real}</p>`,
+      box:`<div class="np-box"><b>Consequences</b>${fx(w.eff)}${w.infl?`<div class="deltas"><span class="n">📈 +${w.infl}% inflation</span></div>`:''}</div>`,foot:'Weather: changeable, like public opinion.',tag:w.kick});}
+  // the ECB steps in when inflation runs hot
+  const infPeak=inf,hikesBefore=hikes;
+  if(inf>=ECB_LIMIT&&!last){hikes++;inf=Math.max(1,inf-3);const eff=[-4,0,0,0];apply(eff);
+    const mg=owned.includes('villa')?`<p><b>Your own wallet:</b> ${N('the mortgage on Commissioner {name}’s villa just went up. It now costs you')} ${eur(mortgage())} a day.</p>`:'';
+    pages.push({kick:'Economy',head:'ECB raises interest rates to tame runaway prices',sub:'Frankfurt acts after weeks of rising prices in the shops',
+      photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="80" font-size="64" text-anchor="middle">🏦</text></svg>`,cap:'The ECB tower in Frankfurt. Nobody inside answers your calls.',
+      body:`<p>Inflation in your Europe hit ${infPeak.toFixed(infPeak%1?1:0)}%. The central bank in Frankfurt, which no Commissioner can boss around, raised its rates. Prices should calm down; borrowing just got expensive.</p>${mg}<p class="real"><i>This really happened:</i> ${ECB_REAL}</p>`,
+      box:`<div class="np-box"><b>Consequences</b>${fx(eff)}<div class="deltas"><span class="p">📈 −3% inflation</span>${owned.includes('villa')?`<span class="n">🏠 mortgage −${eur(mortgage())}/day</span>`:''}</div></div>`,foot:'Weather: tight, like credit.',tag:'Economy'});}
+  // catches from earlier offers
+  for(let i=pending.length-1;i>=0;i--){if(pending[i].at<=idx||last){const ev=pending.splice(i,1)[0].ev;apply(ev.catch.eff);cause=ev;const ch=CHARS[EVCHAR[ev.id]]||{svg:'',name:'An old friend'};
+    pages.push({kick:'Scandal',head:N(ev.catch.head),sub:`The catch: ${ev.title.toLowerCase()}`,photo:ch.svg,cap:`${ch.name}, waving cheerfully only yesterday.`,
+      body:`<p>${N(ev.catch.text)} Commissioner ${N('{name}')} was unavailable for comment.</p><p class="real"><i>This really happened:</i> ${ev.real}</p>`,
+      box:`<div class="np-box"><b>Consequences</b>${fx(ev.catch.eff)}</div>`,foot:'Weather: storm brewing around your office.',tag:'Scandal'});}}
+  // lifestyle exposé
+  if(day>=UNLOCK.world&&heat>=25&&Math.random()<=heat/140){const t=owned.map(id=>SHOPMAP[id]).sort((a,b)=>b.price-a.price)[0];
+    const thing=t?t.name.toLowerCase().replace(/^a /,''):'lifestyle';const eff=[0,0,-Math.min(16,6+Math.round(heat/8)),0];apply(eff);heat=Math.max(0,heat-30);cause={title:'living beyond your means'};
+    pages.push({kick:'Investigation',head:N(`How does Commissioner {name} afford a ${thing}?`),sub:'Journalists compare a public salary with a very private lifestyle',
+      photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="80" font-size="64" text-anchor="middle">${t?t.ico:'💶'}</text></svg>`,cap:'Spotted by a neighbour with a long lens.',
+      body:`<p>${N('Reporters have been asking where Commissioner {name}’s money comes from. The answer “savings” did not convince anyone.')}</p><p class="real"><i>This really happened:</i> ${SHOP_REAL}</p>`,
+      box:`<div class="np-box"><b>Consequences</b>${fx(eff)}</div>`,foot:'Weather: clouded, like your finances.',tag:'Investigation'});}
+  // tonight's inflation figure: only now does the player see what the day did to prices
+  {const f=x=>x.toFixed(x%1?1:0),dlt=Math.round((infPeak-infShown)*10)/10,ecb=hikes>hikesBefore;
+   const line=`<div class="np-infl">📈 Inflation: <b>${f(infPeak)}%</b> <span>(${dlt>0?'+':''}${f(dlt)} today)</span>${ecb?`<br><i>The ECB steps in: see inside.</i>`:dlt>0?'<br><i>Shops will raise their prices overnight.</i>':''}</div>`;
+   if(day>=UNLOCK.inflation&&pages.length&&pages[0].tag==='Front page')pages[0].box=pages[0].box.replace('</div>',line+'</div>');
+   infShown=inf;}
+  updatePurse();
+  if(pages.length>1&&pages[0].tag==='Front page')pages[0].box+=`<div class="np-index"><b>Inside today</b>${pages.slice(1).map((p,i)=>`<div><span>${p.tag}</span><span>p.${i+2}</span></div>`).join('')}</div>`;
+  let i=0;
+  const show=()=>{const pg=pages[i];
+    layer.innerHTML=paper({...pg,edition:i===0?'Evening edition':`Page ${i+1} · ${pg.tag}`,footR:i<pages.length-1?`More on page ${i+2} →`:'The end. Sleep well.'});
+    const b=$('#cont');
+    b.insertAdjacentHTML('beforebegin',`<div class="np-nav"><button type="button" id="np-prev" ${i?'':'disabled'}>← Back</button><span>Page ${i+1} of ${pages.length}</span><span></span></div>`);
+    b.textContent=i<pages.length-1?'Turn the page →':(last?'Fold the paper':'Fold the paper');
+    $('#np-prev').onclick=()=>{i--;show();};
+    b.onclick=()=>{if(i<pages.length-1){i++;show();return;}const d=deadStat();if(d){layer.innerHTML='';return gameOver(d);}cause=null;done();};
+    b.focus({preventScroll:true});};
+  if(!pages.length){done();return;}
+  show();
+  tip('paper','top');if(day>=UNLOCK.inflation)tip('inflation','top');if(w)tip('world','top');
+}
+function world(next){
+  if(PX.unrest>0&&Math.random()<Math.min(.8,.25*PX.unrest)){PX.unrest=Math.max(0,PX.unrest-2);return showWorld(RIOT,next);}
+  const w=WORLD.find(x=>!usedWorld.includes(x.id)&&x.cond(S));
+  if(!w||Math.random()>.7)return next();
+  usedWorld.push(w.id);showWorld(w,next);
+}
+const cashOf=ev=>(CASH[ev.id]||[0])[0];
+function expose(next){
+  if(heat<25||Math.random()>heat/140)return next();
+  const top=owned.map(id=>SHOPMAP[id]).sort((a,b)=>b.price-a.price)[0];
+  const thing=top?top.name.toLowerCase().replace(/^a /,''):'lifestyle';
+  const eff=[0,0,-Math.min(16,6+Math.round(heat/8)),0];apply(eff);heat=Math.max(0,heat-30);cause={title:'living beyond your means'};
+  layer.innerHTML=paper({edition:'Special edition',kick:'Investigation',head:N(`How does Commissioner {name} afford a ${thing}?`),
+    sub:'Journalists compare a public salary with a very private lifestyle',
+    photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="80" font-size="64" text-anchor="middle">${top?top.ico:'💶'}</text></svg>`,
+    cap:'Spotted by a neighbour with a long lens.',
+    body:`<p>${N('Reporters have been asking where Commissioner {name}’s money comes from. The answer “savings” did not convince anyone.')}</p><p class="real"><i>This really happened:</i> ${SHOP_REAL}</p>`,
+    box:`<div class="np-box"><b>Consequences</b>${fx(eff)}</div>`,foot:'Weather: clouded, like your finances.'});
+  updatePurse();
+  const b=$('#cont');b.textContent='Ouch. Hide the receipts.';b.focus({preventScroll:true});
+  b.onclick=()=>{const d=deadStat();if(d){layer.innerHTML='';return gameOver(d);}cause=null;next();};
+}
+function offer(ev,nextDay){
+  SND.chime();tip('offer','top');
+  usedEv.push(ev.id);const ch=CHARS[EVCHAR[ev.id]];
+  layer.innerHTML=`<div class="veil letter"><div class="modal evt" role="dialog" aria-modal="true" aria-labelledby="ev-t">
+    <div class="kicker">Day ${day} · The backroom deal</div>
+    <h3 id="ev-t">One more thing before you go home…</h3>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div><div class="hi" data-type>${N(ch.hello)}</div></div></div>
+    <div class="block"><div class="from">${ev.from}</div><h4 style="font-size:17px">${ev.title}</h4>
+      <p class="offer" data-type>${N(ev.text)}</p><div class="small">${ev.small}</div>
+      <div class="opts"><button class="acc" id="evA" type="button" ${ev.cost&&money<ev.cost?'disabled':''}>Accept${fx(ev.acc)}${cashOf(ev)?`<span class="cashchip">💶 +${eur(cashOf(ev))}</span>`:''}${ev.cost?`<span class="cashchip">💶 −${eur(ev.cost)}</span>`:''}${ev.rest?'<span class="cashchip">🧘 bars calm down</span>':''}</button>
+      <button id="evD" type="button">Politely decline${fx(ev.dec)}</button></div></div>
+  </div></div>`;
+  typeIn(layer.querySelector('.modal'));
+  $('#evA').onclick=()=>{
+    apply(ev.acc);
+    const c=CASH[ev.id];if(c){money+=c[0];heat+=c[1];}
+    if(ev.cost)money-=ev.cost;
+    if(ev.rest){STATS.forEach(s=>{S[s.k]+=Math.sign(50-S[s.k])*Math.min(6,Math.abs(50-S[s.k]));});updateStats();}
+    if(ev.promise){
+      const ti=ev.target?STATS.findIndex(s=>s.k===ev.target):-1;
+      const fits=d=>!CARDS[d].follow&&!promises.has(d)&&(ti<0||CARDS[d].R[ti]<0);
+      let j=ev.card?deck.findIndex((d,k)=>k>=idx&&CARDS[d].id===ev.card&&!promises.has(d)):deck.findIndex((d,k)=>k>=idx&&fits(d));
+      if(j<0&&ti>=0)j=deck.findIndex((d,k)=>k>=idx&&!CARDS[d].follow&&!promises.has(d));
+      if(j>-1){promises.set(deck[j],ev.promise);const t=CARDS[deck[j]].title;
+        const who=ev.suit&&CARDS[deck[j]].org?`💼 Today’s client: ${CARDS[deck[j]].org}. `:'';
+        setTimeout(()=>toastText(N(who+(ev.promise==='R'?`🤝 Promised: you will approve “${t}”.`:`✋ Promised: you will reject “${t}”.`))),400);}}
+    if(ev.catch&&Math.random()<ev.catch.p)pending.push({at:idx+1+Math.floor(Math.random()*3),ev});
+    updatePurse();nextDay();};
+  $('#evD').onclick=()=>{apply(ev.dec);nextDay();};
+}
+
+function headline(ev,done){
+  apply(ev.catch.eff);cause=ev;const ch=CHARS[EVCHAR[ev.id]];
+  layer.innerHTML=paper({edition:'Special edition',kick:'Scandal',head:N(ev.catch.head),
+    sub:`The catch: ${ev.title.toLowerCase()}`,
+    photo:ch.svg,cap:`${ch.name}, waving cheerfully only yesterday.`,
+    body:`<p>${N(ev.catch.text)} Commissioner ${N('{name}')} was unavailable for comment.</p><p class="real"><i>This really happened:</i> ${ev.real}</p>`,
+    box:`<div class="np-box"><b>Consequences</b>${fx(ev.catch.eff)}</div>`,
+    foot:'Weather: storm brewing around your office.'});
+  const b=$('#cont');b.textContent='Ouch. Back to work.';b.onclick=()=>{layer.innerHTML='';done();};b.focus({preventScroll:true});
+}
+// Typemachine: elementen met data-type worden letter voor letter uitgetypt. Tik op de modal om over te slaan.
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function typeIn(root,onDone){
+  let doneCalled=false;const done=()=>{if(!doneCalled&&onDone){doneCalled=true;onDone();}};
+  const els=[...root.querySelectorAll('[data-type]')];
+  const full=els.map(e=>e.textContent);els.forEach(e=>{e.textContent='\u00a0'});
+  let i=0,j=0,stop=false,timer;
+  const finish=()=>{stop=true;clearTimeout(timer);els.forEach((e,k)=>{e.textContent=full[k];e.classList.remove('typing')});done();};
+  if(RM||!els.length){finish();return finish}
+  const tick=()=>{if(stop)return; if(i>=els.length){done();return;}
+    const e=els[i];j++;e.classList.add('typing');e.textContent=full[i].slice(0,j);if(full[i][j-1]!==' ')SND.type();
+    if(j>=full[i].length){e.classList.remove('typing');i++;j=0;timer=setTimeout(tick,260);return}
+    const ch=full[i][j-1];timer=setTimeout(tick,/[.,!?:;]/.test(ch)?140:22+Math.random()*24);};
+  timer=setTimeout(tick,200);
+  root.addEventListener('pointerdown',finish,{once:true});
+  return finish;
+}
+function toastText(t){const el=$('#toast');el.hidden=true;void el.offsetWidth;el.innerHTML=`<div class="deltas"><span>${t}</span></div>`;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>el.hidden=true,2400);}
+function verdictChips(c,dir){
+  const euTxt=c.quest?['No file on this one…','mix']:{R:['EU mostly said yes','ok'],L:['EU mostly said no','no'],M:['EU chose a compromise','mix']}[c.eu]||['In-game follow-up','mix'];
+  const you=dir?(dir==='R'?['You: approved','ok']:dir==='M'?['You: compromise','mix']:['You: rejected','no']):null;
+  return `<div class="verdict">${you?`<span class="chip ${you[1]}">${you[0]}</span>`:''}<span class="chip ${euTxt[1]}">${euTxt[0]}</span>${dir&&c.eu===dir?'<span class="chip match">Same choice as Brussels</span>':''}</div>`;
+}
+function toast(c,dir,dd,ip){
+  const t=$('#toast'),d=(dd||c[dir]).map((v,i)=>v?`<span class="${v>0?'p':'n'}">${STATS[i].ico} ${v>0?'+':''}${v}</span>`:'').join('');
+  t.hidden=true;void t.offsetWidth;
+  t.innerHTML=`${verdictChips(c,dir)}<div class="deltas">${d}</div>`;t.hidden=false;
+  clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2700);
+}
+function setSheet(open){
+  const sh=$('#sheet'),tab=$('#rcTab');sh.hidden=!open;tab.setAttribute('aria-expanded',open);
+  tab.innerHTML=open?'<span><span class="k">Reality check</span> · close</span><span>▾</span>'
+                    :'<span><span class="k">Reality check</span> · what did the EU really do?</span><span>▴</span>';
+  if(open)sh.scrollTop=0;
+}
+function fillSheet(c){
+  if(c.practice){$('#sheet').innerHTML='';return;}
+  if(c.quest){$('#sheet').innerHTML=`<div class="grab" aria-hidden="true"></div><div class="kicker">Reality check · ???</div><h3>${c.title}</h3>
+    <div class="block"><h4>Who was behind it?</h4><p>${c.who}</p></div><div class="block"><h4>What did the EU decide?</h4><p>${c.what}</p></div>`;return;}
+  if(c.follow){$('#sheet').innerHTML=`<div class="grab" aria-hidden="true"></div><div class="kicker">Reality check · follow-up · ${c.year}</div><h3>${c.title}</h3>
+    <div class="spoil">This dossier is back because of your earlier choice on “${c.parent}”.</div>
+    ${verdictChips(c)}
+    <div class="block"><h4>Why is this back?</h4><p>${c.who}</p></div>
+    <div class="block society"><h4>What happened in real life?</h4><p>${c.what}</p></div>
+    ${c.src?`<div class="block src">Source: ${c.src.map(s=>`<a href="${s[1]}" target="_blank" rel="noopener">${s[0]}</a>`).join(' · ')}</div>`:''}`;return;}
+  $('#sheet').innerHTML=`<div class="grab" aria-hidden="true"></div><div class="kicker">Reality check · ${c.year}</div><h3>${c.title}</h3>
+    <div class="spoil">Feel free to read what really happened first, or go with your gut.</div>
+    ${verdictChips(c)}
+    <div class="block"><h4>Who was behind it?</h4><p>${c.who}</p></div>
+    <div class="block"><h4>What did the EU decide?</h4><p>${c.what}</p></div>
+    <div class="block"><h4>What were the consequences?</h4><p>${c.impact}</p></div>
+    ${SOCIETY[c.title]?`<div class="block society"><h4>What does it mean for society?</h4><p>${SOCIETY[c.title]}</p></div>`:''}
+    ${lobbyBlock(c)}
+    <div class="block src">Source: ${c.src.map(s=>`<a href="${s[1]}" target="_blank" rel="noopener">${s[0]}</a>`).join(' · ')}</div>`;
+}
+$('#rcTab').onclick=()=>setSheet($('#sheet').hidden);
+// Swipe the reality check down to close it, once it's scrolled to the top (or by dragging the handle).
+(function(){
+  const sh=$('#sheet');let y0=null,dy=0,pulling=false;
+  const start=(y,onHandle)=>{if(sh.hidden)return;if(sh.scrollTop>0&&!onHandle){y0=null;return;}y0=y;dy=0;pulling=false;};
+  const move=(y,e)=>{if(y0===null)return;dy=y-y0;
+    if(!pulling){if(dy>6&&sh.scrollTop<=0)pulling=true;else if(dy<-6){y0=null;return;}else return;}
+    if(e&&e.cancelable)e.preventDefault();
+    sh.style.transition='none';sh.style.transform=`translateY(${Math.max(0,dy)}px)`;sh.style.opacity=String(Math.max(.4,1-dy/400));};
+  const end=()=>{if(y0===null)return;y0=null;if(!pulling)return;pulling=false;
+    sh.style.transition='transform .25s ease, opacity .25s ease';
+    if(dy>80){sh.style.transform='translateY(100%)';sh.style.opacity='0';
+      setTimeout(()=>{setSheet(false);sh.style.transition='';sh.style.transform='';sh.style.opacity='';},230);}
+    else{sh.style.transform='';sh.style.opacity='';}};
+  sh.addEventListener('touchstart',e=>start(e.touches[0].clientY,!!e.target.closest('.grab')),{passive:true});
+  sh.addEventListener('touchmove',e=>move(e.touches[0].clientY,e),{passive:false});
+  sh.addEventListener('touchend',end);sh.addEventListener('touchcancel',end);
+  // mouse / pen: drag the handle
+  sh.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'||!e.target.closest('.grab'))return;start(e.clientY,true);
+    const mv=ev=>move(ev.clientY,ev),up=()=>{end();removeEventListener('pointermove',mv);removeEventListener('pointerup',up);};
+    addEventListener('pointermove',mv);addEventListener('pointerup',up);});
+})();
+
+function lobbyBlock(c){
+  const L=LOBBY[c.title]; if(!L)return '';
+  return `<div class="block"><h4>Lobbying power <span class="reg">EU Transparency Register</span></h4>${L.map(o=>`
+    <div class="lobby"><a href="${o.url}" target="_blank" rel="noopener">${o.org}</a>
+    <div class="fig"><span><b>${o.cost}</b>per year</span><span><b>${o.fte}</b>lobbyists (FTE)</span><span><b>${o.meet}</b>top-level meetings</span></div>
+    <div class="fy">Financial year ${o.fy}${o.note?' · '+o.note:''}</div></div>`).join('')}</div>`;
+}
+
+function checkWarn(){
+  for(const st of STATS){const v=S[st.k],zone=v<=DANGER_LOW?'low':v>=DANGER_HIGH?'high':null;
+    if(!zone){if(v>DANGER_LOW+10&&v<DANGER_HIGH-10)delete warned[st.k];continue;}
+    if(warned[st.k]===zone)continue;warned[st.k]=zone;
+    const w=WARN[st.k][zone],ch=CHARS[w.char];const el=$('#warn');
+    el.innerHTML=`<div class="wk">⚠ Warning</div>${ch.svg}<h3>${st.ico} ${st.lbl} ${zone==='low'?'almost empty':'almost full'}</h3><div class="wv">${Math.round(v)}%</div><div class="wq">${N(w.text)}</div><div class="wn">— ${ch.name}</div><button type="button" id="w-ok">Continue</button>`;
+    el.hidden=false;SND.knock&&SND.knock();setTimeout(()=>{const b=$('#w-ok');b&&b.focus({preventScroll:true})},60);
+    $('#w-ok').onclick=()=>{el.hidden=true;tip('warn','bottom');};return;}
+}
+function termReview(won,endKey,fut){
+  const r={won,ending:endKey,owned:owned.length,pacts:PX.sealed.length,money,matchPct:hist.length?Math.round(matchTotal/hist.length*100):0};
+  const a=fut?{text:futText(fut.next),real:fut.real}:AFTER.find(x=>x.when(r));
+  const comp=hist.filter(h=>h.dir==='M').length;
+  return `<div class="review"><h4>Your term in numbers</h4>
+    <div class="rv-grid"><div><b>${day}</b><span>days in office</span></div><div><b>${hist.length}</b><span>dossiers decided</span></div>
+    <div><b>${r.matchPct}%</b><span>same choice as Brussels</span></div><div><b>${comp}</b><span>compromises</span></div>
+    <div><b>${eur(money)}</b><span>in the bank</span></div><div><b>${owned.map(id=>SHOPMAP[id].ico).join('')||'—'}</b><span>possessions</span></div></div>
+    ${PX.sealed.length?`<p class="rv-pacts">🌙 Pacts sealed: ${PX.sealed.map(id=>CHARS[(PACTS.find(p=>p.id===id)||{}).char]?.name||id).join(', ')}</p>`:''}
+    <h4>What you did next</h4><p class="rv-next">${N(a.text)}</p>${a.real?`<p class="rv-real">${a.real}</p>`:''}</div>`;
+}
+function gameOver(s){
+  inGame=false;clearSave();SND.fired();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
+  const zone=S[s.k]<=0?'low':'high',E=ENDING[s.k][zone],dirSign=zone==='low'?-1:1,si=STATS.indexOf(s);
+  const worst=hist.filter(h=>h.dd&&h.dd[si]*dirSign>0).sort((a,b)=>b.dd[si]*dirSign-a.dd[si]*dirSign).slice(0,3);
+  const verb=h=>h.dir==='R'?'approved':h.dir==='M'?'compromised on':'rejected';
+  layer.innerHTML=paper({edition:'Special edition',kick:E.kick,head:N(E.head),sub:N(E.sub),
+    photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="72" font-size="24" text-anchor="middle" textLength="108" lengthAdjust="spacingAndGlyphs">${E.scene}</text></svg>`,
+    cap:N('Commissioner {name}, earlier today.'),
+    body:`<p>${N(E.text)}</p>${cause?`<p><b>The last straw:</b> ${cause.title.toLowerCase()}.</p>`:''}`,
+    box:`<div class="np-box"><b>How it went wrong</b>${worst.length?worst.map(h=>`<div class="hw">Day ${h.day}: you ${verb(h)} “${h.c.title}” <span class="${dirSign<0?'n':'p'}">${s.ico} ${h.dd[si]>0?'+':''}${h.dd[si]}</span></div>`).join(''):'It crept up on you, one small choice at a time.'}</div>`,
+    foot:`${s.ico} ${s.lbl}: ${zone==='low'?'0':'100'}%`,footR:'Turn the page →'});
+  layer.querySelector('.veil').classList.add('fired');
+  const b=$('#cont');b.textContent='Read your term review →';b.focus({preventScroll:true});
+  b.onclick=()=>{SND.paper&&SND.paper();
+    layer.innerHTML=`<div class="veil over"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h">
+      <div class="kicker">Fired on day ${day} · ${s.ico} ${s.lbl} ${zone==='low'?0:100}%</div>
+      <h3 id="ov-h">${N(E.kick)}</h3>
+      <div class="quote">${N(QUIT[s.k])}</div>
+      ${termReview(false,s.k+'-'+zone)}
+      <button class="next" id="restart" type="button">Apply again</button></div></div>`;
+    $('#restart').onclick=start;$('#restart').focus({preventScroll:true});};
+}
+function gameOverOld(s){
+  SND.fired();
+  const v=S[s.k]<=0?0:100, [t,txt]=GAMEOVER[s.k][v];
+  layer.innerHTML=`<div class="veil over"><div class="modal" role="dialog" aria-modal="true">
+   <div class="kicker">Fired on day ${day} · ${s.ico} ${s.lbl} ${v}%</div><div class="big">${s.ico}</div>
+   <h3>${N('{name}')}, you’re fired: ${t.toLowerCase()}</h3><p>${txt}</p><p>${N(FIRE[s.k])}</p><div class="quote">${N(QUIT[s.k])}</div>${cause?`<p class="stats-sum">The catch that finished you off: ${cause.title.toLowerCase()}</p>`:''}
+   <p class="stats-sum">${idx} of ${deck.length} dossiers handled<br>${STATS.map(x=>`${x.ico} ${Math.max(0,Math.min(100,S[x.k]))}%`).join(' · ')}<br>💶 ${eur(money)} ${owned.map(id=>SHOPMAP[id].ico).join('')}${owned.length?' — fired, but comfortable':' — fired, and broke'}</p>
+   <button class="next" id="restart" type="button">Apply again</button></div></div>`;
+  $('#restart').onclick=start;$('#restart').focus({preventScroll:true});
+}
+// ---------- Your dream ----------
+function dreamProg(){const k=PX.dream;if(!k)return {txt:'',ok:false};const f=futStatus();
+  if(k==='job'){const yes=hist.filter(h=>h.dir==='R').length,share=hist.length?yes/hist.length:0;return {ok:share>=DREAM_YES,txt:Math.round(share*100)+'% yes to the lobby (need '+Math.round(DREAM_YES*100)+'%)'};}
+  return {ok:f[k].ok,txt:f[k].prog};}
+function dreamNudge(){const d=DREAMS[PX.dream],p=dreamProg();
+  return p.ok?`Your dream, {name}: ${d.name}. You’re on track: ${p.txt}. Don’t blow it now.`
+    :`Remember your dream, {name}: ${d.name}. Right now: ${p.txt}. Brussels won’t hand it to you. Choose for yourself once in a while.`;}
+// ---------- Futures: pick your ending after a completed term ----------
+function futOrg(){const cnt={};hist.forEach(h=>{if(h.dir==='R'&&h.c&&h.c.org){const k=h.c.sector;cnt[k]=(cnt[k]||0)+1;}});
+  const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];const h=[...hist].reverse().find(h=>h.dir==='R'&&h.c&&h.c.sector===top);
+  let o=h?h.c.org.replace(/\s*\(.*?\)\s*/g,'').split(/ & |, /)[0]:'BusinessEurope';return o.replace(/^A /,'a ');}
+const futText=t=>N(String(t).replace(/\{org\}/g,futOrg()));
+function futStatus(){const chance=hist.filter(h=>h.c&&h.c.L&&h.c.R&&(h.c.L[1]>0||h.c.R[1]>0)),green=chance.filter(h=>h.dd&&h.dd[1]>0).length,share=chance.length?green/chance.length:0;
+  return {job:{ok:true,prog:'All '+hist.length+' dossiers done'},
+    island:{ok:money>=ISLAND_PRICE,prog:eur(money)+' of '+eur(ISLAND_PRICE)},
+    weed:{ok:share>=GREEN_SHARE&&!!PX.questOk,prog:Math.round(share*100)+'% of '+Math.round(GREEN_SHARE*100)+'% nature choices'}};}
+// ---------- Secret list: endings you hear about from people in Brussels ----------
+const secrets=()=>(PX.secrets=PX.secrets||[]);
+function secretDue(){if(typeof SECRETS==='undefined'||day<SECRET_FROM||PX.secretDay===day)return null;
+  // island: the money must stay in the bank for a whole day (morning to next morning) before Fat Cat notices
+  if(SECRETS.island&&!secrets().includes('island')){const min=SECRETS.island.minMoney||0;
+    if(money<min)PX.richDay=null;else if(PX.richDay==null)PX.richDay=day;else if(PX.richDay<day){PX.secretDay=day;return 'island';}}
+  const left=FUTURES.map(f=>f.id).filter(k=>SECRETS[k]&&!SECRETS[k].quest&&!SECRETS[k].minMoney&&!secrets().includes(k));if(!left.length||Math.random()>=SECRET_CHANCE)return null;
+  PX.secretDay=day;return left[Math.floor(Math.random()*left.length)];}
+const secLine=t=>N(String(t).replace(/\{island\}/g,eur(ISLAND_PRICE)).replace(/\{money\}/g,eur(money)));
+function secStatus(){const f=futStatus();f.job={ok:false,prog:Math.min(idx,deck.length)+' of '+deck.length+' dossiers'};return f;}
+function updateSecTab(){const t=$('#secTab');if(!t)return;const n=secrets().length;t.hidden=!n||!inGame;if(!n)closeSecrets();$('#secN').textContent=n?n+'/'+FUTURES.length:'';}
+function revealSecret(k,then){
+  if(secrets().includes(k)){if(then)then();return;}
+  if(!then&&(layer.innerHTML||tipModal()||!$('#top'))){setTimeout(()=>revealSecret(k),600);return;}
+  const S0=SECRETS[k],ch=CHARS[S0.char],F=FUTURES.find(f=>f.id===k);if(!ch||!F)return;
+  secrets().push(k);SND.chime&&SND.chime();
+  layer.innerHTML=`<div class="veil letter"><div class="modal evt secret" role="dialog" aria-modal="true" aria-labelledby="sec-t">
+    <div class="kicker">Day ${day} · ${then?'Evening · a note under your door':'Overheard in the corridor'}</div>
+    <h3 id="sec-t">${then?'Someone knocks after dark…':ch.name+' leans in…'}</h3>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div><div class="hi">${secLine(S0.line)}</div></div></div>
+    <div class="block"><div class="from">🤫 New on your Secret list</div><h4 style="font-size:17px">${F.ico} ${F.name}</h4><div class="small">Needs: ${F.need.toLowerCase()}</div></div>
+    <button class="next" id="sec-ok" type="button">Add to my Secret list</button></div></div>`;
+  $('#sec-ok').focus({preventScroll:true});
+  $('#sec-ok').onclick=()=>{layer.innerHTML='';updateSecTab();const d=$('#secTab .secdot');if(d)d.hidden=false;if(then)then();};
+}
+function openSecrets(){
+  const st=secStatus();const d=$('#secTab .secdot');if(d)d.hidden=true;SND.paper&&SND.paper();
+  const D=$('#secDrawer');D.innerHTML=`<div class="seclist"><button class="sl-x" id="sl-x" type="button" aria-label="Close">×</button>
+    <div class="kicker">Only for your eyes</div><h3 id="sl-h">🤫 Secret list</h3>
+    <p class="small">Ways this term could end, if you play it right. People in Brussels let things slip. Keep listening.</p>
+    <div class="futs">${FUTURES.map(f=>{const known=secrets().includes(f.id),s=st[f.id];
+      return known?`<div class="fut sl${s.ok?' done':''}"><span class="fi">${f.ico}</span><span class="ft"><b>${f.name} ${s.ok?'<em class="chk">✓</em>':''}</b><small>Needs: ${f.need}</small><small class="fp">${s.prog}</small></span></div>`
+        :`<div class="fut sl locked"><span class="fi">🔒</span><span class="ft"><b>???</b><small>Nobody has told you about this one yet.</small></span></div>`;}).join('')}
+      <div class="fut sl locked"><span class="fi">${bodyName()?'👻':'🔒'}</span><span class="ft"><b>???</b><small>${bodyName()?`The 13th floor still remembers ${escH(bodyName())}.`:'Some secrets are better left buried.'}</small></span></div></div>
+    </div>`;
+  D.classList.add('open');D.setAttribute('aria-hidden','false');$('#secShade').hidden=false;$('#sl-x').focus({preventScroll:true});$('#sl-x').onclick=closeSecrets;
+}
+function closeSecrets(){const D=$('#secDrawer');if(!D.classList.contains('open'))return;D.classList.remove('open');D.setAttribute('aria-hidden','true');$('#secShade').hidden=true;SND.paper&&SND.paper();}
+const secOpen=()=>$('#secDrawer').classList.contains('open');
+$('#secShade').onclick=closeSecrets;
+{let x0=null;const D=$('#secDrawer');D.addEventListener('pointerdown',e=>{x0=e.clientX;});D.addEventListener('pointerup',e=>{if(x0!=null&&e.clientX-x0<-60)closeSecrets();x0=null;});}
+$('#secTab').onclick=openSecrets;
+// ---------- The ghost's ending: you said his name three times ----------
+function possessed(){
+  inGame=false;clearSave();SND.fired&&SND.fired();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
+  const oldGhost=GHOST;try{localStorage.setItem('swl-ghost',(PLAYER||'Commissioner').slice(0,20));localStorage.setItem('swl-body',(PLAYER||'Commissioner').slice(0,20));}catch(e){}
+  const E=POSSESSED,G=t=>N(String(t).replace(/\{ghost\}/g,escH(oldGhost)));
+  layer.innerHTML=paper({edition:'Late edition',kick:E.kick,head:G(E.head),sub:G(E.sub),
+    photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="72" font-size="24" text-anchor="middle" textLength="108" lengthAdjust="spacingAndGlyphs">${E.scene}</text></svg>`,
+    cap:G('Commissioner {name}. Or is it?'),body:`<p>${G(E.text)}</p>`,
+    box:`<div class="np-box"><b>👻 Secret ending</b>You helped with all four requests.</div>`,foot:'Weather: a cold draught on the 13th floor.',footR:'Turn the page →'});
+  layer.querySelector('.veil').classList.add('fired');
+  const b=$('#cont');b.textContent='What happened to me? →';b.focus({preventScroll:true});
+  b.onclick=()=>{SND.ghost&&SND.ghost(true);
+    layer.innerHTML=`<div class="veil over"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h">
+      <div class="kicker">Secret ending · day ${day}</div><div class="big">👻</div><h3 id="ov-h">${N('You are the ghost now, {name}.')}</h3>
+      <p>${G(E.end)}</p>${termReview(false,'possessed',{next:'You haunt the filing cabinet on the 13th floor. Sometimes, in meetings, you hear your own voice calling people “old chap”.'})}
+      <button class="next" id="restart" type="button">Haunt the next Commissioner</button></div></div>`;
+    $('#restart').onclick=()=>{ghostRename();start();};$('#restart').focus({preventScroll:true});};
+}
+function win(){
+  inGame=false;clearSave();SND.win();$('#warn').hidden=true;$('#gerard').hidden=true;tipQ.length=0;tipBusy=false;
+  const st=futStatus();
+  layer.innerHTML=`<div class="veil over win"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h">
+   <div class="kicker">Term completed · day ${day}</div><div class="big">★</div><h3 id="ov-h">Time to move on, ${N('{name}')}.</h3>
+   <p>Your term is over. All ${deck.length} dossiers handled, and the Union is still standing. Brussels will miss you. The lobbyists already do.</p>
+   <p class="stats-sum">${STATS.map(x=>`${x.ico} ${S[x.k]}%`).join(' · ')}</p>
+   ${PX.dream?(()=>{const d=DREAMS[PX.dream],p=dreamProg();return `<p class="dr-end ${p.ok?'ok':'no'}">${d.ico} Your dream, <b>${d.name}</b>: ${p.ok?'★ achieved!':'it slipped away'} <small>(${p.txt})</small></p>`;})():''}
+   <h4 class="fut-h">Choose your future</h4>
+   <div class="futs">${FUTURES.map(f=>{const s=st[f.id];return `<button type="button" class="fut${s.ok?'':' locked'}${PX.dream===f.id?' mine':''}" data-fut="${f.id}" ${s.ok?'':'disabled'}>
+     <span class="fi">${s.ok?f.ico:'🔒'}</span><span class="ft"><b>${s.ok||secrets().includes(f.id)?f.name:'??? A secret you never heard'}${PX.dream===f.id?' <em class="mine-tag">★ your dream</em>':''}</b><small>${s.ok?'Unlocked':'Needs: '+f.need}</small><small class="fp">${s.prog}</small></span></button>`}).join('')}</div>
+   </div></div>`;
+  layer.querySelectorAll('.fut:not(.locked)').forEach(b=>b.onclick=()=>future(FUTURES.find(f=>f.id===b.dataset.fut)));
+  const first=layer.querySelector('.fut:not(.locked)');first&&first.focus({preventScroll:true});
+}
+function future(F){
+  const dreamTrue=PX.dream===F.id&&dreamProg().ok;
+  layer.innerHTML=paper({edition:'Farewell edition',kick:dreamTrue?'★ Dream come true':F.kick,head:futText(F.head),sub:futText(F.sub),
+    photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="72" font-size="24" text-anchor="middle" textLength="108" lengthAdjust="spacingAndGlyphs">${F.scene}</text></svg>`,
+    cap:N('Former Commissioner {name}, this week.'),body:`<p>${futText(F.text)}</p>${dreamTrue?`<p><b>${N('“This is what I wanted all along,” says {name}.')}</b> ${PX.dream==='job'?'And the lobby made sure it’s the biggest office on the floor.':'Five years of Brussels, and it was worth it.'}</p>`:''}`,
+    box:`<div class="np-box"><b>${F.ico} ${F.name}</b>Unlocked by: ${F.need.toLowerCase()}.</div>`,
+    foot:`★ Term completed · day ${day}`,footR:'Turn the page →'});
+  const b=$('#cont');b.textContent='Read your term review →';b.focus({preventScroll:true});
+  b.onclick=()=>{SND.paper&&SND.paper();
+    layer.innerHTML=`<div class="veil over win"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ov-h">
+      <div class="kicker">Term completed · day ${day} · ${F.ico} ${F.name}</div><h3 id="ov-h">${futText(F.head)}</h3>
+      ${termReview(true,'won',F)}
+      <button class="next" id="restart" type="button">New term</button></div></div>`;
+    $('#restart').onclick=start;$('#restart').focus({preventScroll:true});};
+}
+
+$('#btnL').onclick=()=>!layer.innerHTML&&decide('L');
+$('#btnR').onclick=()=>!layer.innerHTML&&decide('R');
+$('#btnM').onclick=()=>!layer.innerHTML&&decide('M');
+document.addEventListener('keydown',e=>{
+  if(secOpen()){if(e.key==='Escape'){e.preventDefault();closeSecrets();}return}
+  if(tipModal()){if(e.key==='Enter'||e.key===' '||e.key==='Escape'){const b=warnOpen()?$('#w-ok'):$('#g-ok');if(b&&document.activeElement!==b){e.preventDefault();b.click()}}else e.preventDefault();return}
+  if(ovl.innerHTML)return;
+  if(layer.innerHTML){if(e.key==='Enter'||e.key===' '){const b=$('#restart')||$('#go')||$('#cont');if(b&&document.activeElement!==b){e.preventDefault();b.click()}}return}
+  if(e.key==='Escape')setSheet(false);
+  if(e.key==='ArrowLeft')decide('L'); if(e.key==='ArrowRight')decide('R'); if(e.key==='ArrowUp'&&canM())decide('M');
+});
+start();
+// Live text edits: the Regiekamer page of this game saves into the game's own store; read them on load.
+(async()=>{try{if(!window.claude||!claude.use)return;const db=await claude.use('db');if(!db)return;
+  const snap=await db.collection('overrides').get();const O={};snap.docs.forEach(d=>{O[d.id]=d.data();});
+  if(Object.keys(O).length){applyText(O);ghostRename();}
+  const user=await claude.use('user');const own=user?await user.canEdit().catch(()=>false):false;
+  if(own){window.CAN_EDIT=true;const t=document.querySelector('.title .credit');if(t&&!document.getElementById('t-edit'))t.insertAdjacentHTML('beforebegin','<span class="t-edits"><a id="t-edit" class="t-edit" href="regiekamer.html">✎ Regiekamer (texts)</a> · <a class="t-edit" href="https://claude.ai/artifact/U9ZbpujtoFfqwjNU848f22" target="_blank" rel="noopener">🎨 Art Studio</a><br><small>only you see this</small></span>');}
+}catch(e){}})();
+</script>
+
+</body>
+</html>
