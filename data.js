@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.1 demo';
+const GAME_VERSION='v0.2 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].
@@ -532,6 +532,15 @@ const CHARS={
   <rect x="45" y="55" width="13" height="6" rx="2" fill="#141014"/><rect x="62" y="55" width="13" height="6" rx="2" fill="#141014"/><path d="M58 57 H62" stroke="#141014" stroke-width="2"/>
   <path d="M53 70 Q61 72 67 67" stroke="#4a2a20" stroke-width="2" fill="none" stroke-linecap="round"/>
   <ellipse cx="60" cy="46" rx="31" ry="6" fill="#1d1820"/><path d="M42 46 Q42 25 60 25 Q78 25 78 46Z" fill="#241e28"/><rect x="42" y="39" width="36" height="5" fill="#713f52"/></svg>`},
+ investigator:{added:'2026-10-08',name:'Vera Ferret, private investigator',tag:'hired by whoever you ignore',hello:'"Evening, {name}. Don’t get up. I’m only here to show you some photos."',svg:`<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="58" fill="#5a6a72" opacity=".3"/>
+  <path d="M12 120 Q16 84 42 79 L60 96 L78 79 Q104 84 108 120Z" fill="#8a7350"/><path d="M42 79 L50 64 L60 96Z M78 79 L70 64 L60 96Z" fill="#6f5a3c"/>
+  <path d="M56 96 L60 120 L64 96Z" fill="#3a2f2a"/>
+  <rect x="53" y="68" width="14" height="12" fill="#c99b7a"/><ellipse cx="60" cy="55" rx="16" ry="19" fill="#d8ab88"/>
+  <path d="M44 50 Q44 30 60 30 Q76 30 76 50 Q70 42 60 42 Q50 42 44 50Z" fill="#3b2a24"/>
+  <path d="M30 42 L90 42 L84 36 Q60 30 36 36Z" fill="#4a3d33"/><path d="M40 37 Q42 18 60 18 Q78 18 80 37Z" fill="#4a3d33"/><rect x="40" y="33" width="40" height="4" fill="#2a211c"/>
+  <path d="M50 55 L56 55 M64 55 L70 55" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M55 66 Q60 64 65 66" fill="none" stroke="#6a3a2a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="92" cy="92" r="11" fill="#dfeef3" fill-opacity=".55" stroke="#2a211c" stroke-width="4"/><path d="M84 100 L72 112" stroke="#2a211c" stroke-width="6" stroke-linecap="round"/></svg>`},
  fatcat:{name:'Fat Cat',tag:'usually for the economy',hello:'"Money can’t buy happiness, {name}. But it’s very comfortable."',svg:`<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="58" fill="#713f52" opacity=".3"/>
   <path d="M14 120 Q14 88 40 84 L80 84 Q106 88 106 120Z" fill="#392b35"/><ellipse cx="60" cy="112" rx="22" ry="17" fill="#e2d4c6"/>
   <path d="M51 86 L60 91 L51 96Z M69 86 L60 91 L69 96Z" fill="#bb474f"/>
@@ -703,6 +712,16 @@ const QUEST_CHANCE=.4;
 // After a possession, the ghost (now in the old player's body) returns in later games as a freelance lobbyist for any sector.
 const BODY_VISITS=3; // how many of your dossiers he takes over per game
 const BODY_QUIPS=['Old chap! Lovely body, this. A bit stiff in the knees.','Today I represent {org}. Tomorrow? Whoever pays.','Good to be back in a body. Coffee? I can finally drink it.','We’ve met, haven’t we? You look familiar. So do I.','Freelance now. One body, many clients.'];
+// The hired investigator: when a bar stays low (below INVESTIGATOR.low at the end of INVESTIGATOR.days days in a row),
+// the people who suffer from it hire Vera Ferret. Pay her and the hush money calms them (that bar +boost), or refuse and it leaks.
+const INVESTIGATOR={low:25,days:2,from:3,cost:15,boost:5,leakTrust:-6,leakHeat:25,every:3};
+const INV_CLIENTS={eco:'A federation of worried employers',clim:'A coalition of climate groups',trust:'A citizens’ watchdog',corp:'A consortium of industry lobbyists'};
+const INV_SCANDALS=[
+ {you:'a dinner at a lobbyist’s villa you forgot to declare',head:'Commissioner {name} dined at lobbyist’s villa, “forgot” to declare it'},
+ {you:'a weekend on a private jet “for research”',head:'Commissioner {name} flew private jet “for research”'},
+ {you:'a very expensive watch from “a friend”',head:'Commissioner {name} wears €40,000 watch from “a friend”'},
+ {you:'a consultancy contract for your cousin',head:'Cousin of Commissioner {name} lands cosy consultancy contract'},
+ {you:'three nights in a Monaco hotel, paid by a bank',head:'Bank paid for Commissioner {name}’s Monaco hotel'}];
 const POSSESSED={kick:'Strange behaviour',head:'Commissioner {name} back at work after “a funny turn”, now calls everyone “old chap”',sub:'Colleagues say the Commissioner looks… older. And suddenly loves coffee.',scene:'🕯️🪞👻',
  text:'Last night a cleaner heard someone say a name three times in front of the big mirror on the 13th floor. This morning Commissioner {name} came in early, put both feet on the desk and ordered the old coffee machine back. “I’m back, baby,” the Commissioner told the staff, in a voice nobody recognised. Meanwhile something new rattles the filing cabinet. It sounds a lot like {name}.',
  end:'{ghost} has your body, your office and the rest of your term. You have the filing cabinet. Next time somebody sits in your chair, you’ll be the one going “Boooo”.'};

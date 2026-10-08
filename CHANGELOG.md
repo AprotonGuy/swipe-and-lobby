@@ -1,5 +1,14 @@
 # Swipe & Lobby — changelog
 
+## v0.2 demo (8 oktober 2026)
+
+**Nieuw**
+- Privédetective Vera Ferret: als een balk twee avonden onder de 25% staat, huren de mensen die daar last van hebben haar in. Betaal €15k zwijggeld (die balk +5) of laat het uitlekken (Trust −6, media +25).
+- De koffiekaart van het spook komt nu ook als je de tips uitzet, zodat het spook-einde altijd te halen is.
+
+**Verbeterd**
+- De krant, de agenda en de eindschermen staan nu recht. Op de telefoon stonden ze scheef.
+
 ## v0.1 demo (8 oktober 2026)
 De eerste speelbare build.
 

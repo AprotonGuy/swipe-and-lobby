@@ -214,7 +214,7 @@ body.hasM .choices .m{display:flex;flex-direction:column;align-items:center;just
 .block{padding:10px 0;border-top:1px solid rgba(57,43,53,.22)}
 .society{background:rgba(122,156,150,.18);border-top:0;border-left:3px solid var(--star);padding:10px 12px;margin:6px 0;border-radius:2px}
 .news .modal{background:var(--grain),linear-gradient(180deg,#e9e0d3,#ddd1c2);color:#231a20;border-radius:1px;padding:14px 14px 12px;
-  transform:rotate(-.7deg);box-shadow:0 2px 2px rgba(0,0,0,.25),0 24px 50px rgba(0,0,0,.5);--np-serif:"Libre Caslon Text",Georgia,"Times New Roman",serif;--np-head:"Playfair Display",Georgia,serif}
+  transform:none;box-shadow:0 2px 2px rgba(0,0,0,.25),0 24px 50px rgba(0,0,0,.5);--np-serif:"Libre Caslon Text",Georgia,"Times New Roman",serif;--np-head:"Playfair Display",Georgia,serif}
 .news .np-top{display:flex;justify-content:space-between;gap:8px;font:400 9px/1.2 var(--np-serif);font-style:italic}
 .news .np-name{font:400 clamp(30px,9.5vw,42px)/1.05 "UnifrakturMaguntia","Old English Text MT",serif;text-align:center;margin:2px 0 4px}
 .news .np-bar{display:flex;justify-content:space-between;gap:6px;border-top:3px double #231a20;border-bottom:1px solid #231a20;padding:4px 0 3px;
@@ -250,7 +250,7 @@ body.hasM .choices .m{display:flex;flex-direction:column;align-items:center;just
 .news .np-foot{border-top:3px double #231a20;margin-top:10px;padding-top:5px;font:italic 400 10.5px/1.3 var(--np-serif);display:flex;justify-content:space-between;gap:10px}
 .news .next{background:#231a20;color:#e9e0d3;font-family:var(--f-body)}
 .gate{width:min(330px,100%);display:grid;place-items:center}
-.agenda{width:100%;box-sizing:border-box;background:var(--grain),var(--paper-2);color:var(--paper-ink);border-radius:3px;padding:18px 18px 16px;transform:rotate(-1.2deg);
+.agenda{width:100%;box-sizing:border-box;background:var(--grain),var(--paper-2);color:var(--paper-ink);border-radius:3px;padding:18px 18px 16px;transform:none;
   box-shadow:0 2px 2px rgba(20,12,18,.3),0 18px 36px rgba(20,12,18,.45);background-image:var(--grain),repeating-linear-gradient(transparent 0 25px,rgba(72,107,127,.18) 25px 26px);animation:rise .4s cubic-bezier(.2,.8,.2,1)}
 .ag-kick{font:500 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--wine)}
 .ag-day{font:800 30px/1.1 var(--f-display);margin:4px 0 8px}
@@ -469,7 +469,7 @@ body.lockL #btnL,body.lockR #btnR{opacity:.35;text-decoration:line-through}
   font:700 15px/1 var(--f-body);cursor:pointer}
 
 .over{background:radial-gradient(120% 90% at 50% 20%,rgba(187,71,79,.75),rgba(57,43,53,.97));place-items:center}
-.over .modal{background:var(--grain),var(--paper);color:var(--paper-ink);text-align:center;border:0;transform:rotate(-1deg)}
+.over .modal{background:var(--grain),var(--paper);color:var(--paper-ink);text-align:center;border:0;transform:none}
 .over .kicker{color:var(--reject)}
 .over h3{font-size:30px;color:var(--paper-ink)}
 .over .big{font:800 56px/1 var(--f-display);margin:8px 0}
@@ -585,14 +585,15 @@ const stage=$('#stage'), layer=$('#layer');
 // Apply edits made in the control room (lines + own art). Keys: card:<id>, follow:<id>, char:<k>, event:<id>.
 // Text edits from the Regiekamer: first from overrides.js, then live from the game's own store (see bottom).
 function applyText(O){
+  const okfx=a=>Array.isArray(a)&&a.length===4&&a.every(v=>typeof v==='number'&&isFinite(v));
   {const o=O['practice:card'];if(o){if(o.title)PRACTICE.title=o.title;if(o.quip)PRACTICE.quip=o.quip;if(o.ask)PRACTICE.ask=o.ask;}}
   if(O['gerard:back'])Object.keys(GERARD_WELCOME_BACK).forEach(k=>{if(O['gerard:back'][k])GERARD_WELCOME_BACK[k]=O['gerard:back'][k];});
   if(O['gerard:welcome'])Object.keys(GERARD_WELCOME).forEach(k=>{if(O['gerard:welcome'][k])GERARD_WELCOME[k]=O['gerard:welcome'][k];});
   Object.keys(TIPS).forEach(k=>{const o=O['tip:'+k];if(o&&o.text)TIPS[k]=o.text;});
   GERARD_QUIPS.forEach((q,i)=>{const o=O['quip:'+i];if(o&&o.text)GERARD_QUIPS[i]=o.text;});
   const img=u=>`<img class="art" src="${u}" alt="">`;
-  CARDS.forEach(c=>{if(c.follow)return;const o=O['card:'+c.id];if(!o)return;if(o.name){if(!c.faceSeed)c.faceSeed=c.name;c.name=o.name;}if(o.quip)QUIPS[c.title]=o.quip;if(o.ask)c.ask=o.ask;if(o.art)c.artUrl=o.art;});
-  FOLLOW.forEach(f=>{const o=O['follow:'+f.id];if(!o)return;if(o.name){if(!f.faceSeed)f.faceSeed=f.name;f.name=o.name;}if(o.quip)f.quip=o.quip;if(o.ask)f.ask=o.ask;if(o.art)f.artUrl=o.art;});
+  CARDS.forEach(c=>{if(c.follow)return;const o=O['card:'+c.id];if(!o)return;if(o.name){if(!c.faceSeed)c.faceSeed=c.name;c.name=o.name;}if(o.quip)QUIPS[c.title]=o.quip;if(o.ask)c.ask=o.ask;if(o.art)c.artUrl=o.art;if(okfx(o.L))c.L=o.L.slice();if(okfx(o.R))c.R=o.R.slice();});
+  FOLLOW.forEach(f=>{const o=O['follow:'+f.id];if(!o)return;if(o.name){if(!f.faceSeed)f.faceSeed=f.name;f.name=o.name;}if(o.quip)f.quip=o.quip;if(o.ask)f.ask=o.ask;if(o.art)f.artUrl=o.art;if(okfx(o.L))f.L=o.L.slice();if(okfx(o.R))f.R=o.R.slice();});
   Object.keys(CHARS).forEach(k=>{const o=O['char:'+k];if(!o)return;if(o.name)CHARS[k].name=o.name;if(o.hello)CHARS[k].hello=o.hello;if(o.art)CHARS[k].svg=img(o.art);});
   EVENTS.forEach(e=>{const o=O['event:'+e.id];if(o&&o.text)e.text=o.text;});
 }
@@ -1106,10 +1107,10 @@ const SECRETARY=['Four of them are already in the corridor. One brought cake.','
 const SLOTS=['09:00','11:00','14:00','16:00'];
 // Begin van de dag: lege bureaustoel tot je op de knop drukt.
 // The practice card comes on its own, before the first diary: only that one card on the desk.
-const needsPractice=()=>day===1&&idx===0&&!practiced&&PREF.tips&&(PRACTICE_ALWAYS||!SEEN.has('practiceDone'));
+const needsPractice=()=>day===1&&idx===0&&!practiced&&(PRACTICE_ALWAYS||!SEEN.has('practiceDone')); // also without tips: the coffee card is where the ghost ending starts
 function startPractice(){
   practicing=true;document.body.classList.add('practice');document.body.classList.remove('gated');$('.rcwrap').hidden=true;stage.innerHTML='';updateStats();
-  if(!SEEN.has('practice'))tip('practice','mid',undefined,()=>{renderCards(true);updateStats();});else{renderCards(true);updateStats();}
+  if(PREF.tips&&!SEEN.has('practice'))tip('practice','mid',undefined,()=>{renderCards(true);updateStats();});else{renderCards(true);updateStats();}
 }
 function gate(){
   dropBottomTips();
@@ -1231,7 +1232,7 @@ function decide(dir,deal){if(tipModal())return;
     el.style.transform=`translate3d(${dir==='R'?520:-520}px,40px,0) rotate(${dir==='R'?28:-28}deg)`;el.style.opacity=0;previewStats(null);
     const dd=c[dir].slice();STATS.forEach((s,i)=>S[s.k]+=dd[i]);dayStart={...S};updateStats();if(dir==='L'){PX.ghostPath=true;PX.ritual=0;PX.ritualNext=1;}
     setTimeout(()=>{practicing=false;practiced=true;document.body.classList.remove('practice');stage.innerHTML='';toast(c,dir,dd);gate();updateStats();
-      if(dir==='L')tip('coffeeNo','top');tip('practiceDone','top');},300);return;}
+      if(dir==='L'){if(PREF.tips)tip('coffeeNo','top');else setTimeout(()=>toastText('👻 '+N(TIPS.coffeeNo||'No coffee? … Fine. I’ll remember that.')),400);}tip('practiceDone','top');},300);return;}
   {const g=$('#gerard');if(!g.hidden&&g.classList.contains('bottom')&&!g.classList.contains('intro')){g.hidden=true;tipBusy=false;setTimeout(pumpTip,600);}}
   const f=forced(),pr=f&&f.dir;
   if(dir==='M'&&!canM()){toastText(curCard().eu!=='M'?'No compromise possible here: Brussels didn’t compromise on this one.':'No compromise left today. Buy a late-night trilogue in the shop.');return;}
@@ -1302,7 +1303,10 @@ function endDay(done){
   const pact=!last&&day>=UNLOCK.pacts&&Math.random()<.4?pickPact():null;
   const ev=!pact&&!last&&day>=UNLOCK.offers&&pool.length&&Math.random()<.75?pool[Math.floor(Math.random()*pool.length)]:null;
   const nextDay=()=>{layer.innerHTML='';PX.snap=null;if(!last){day++;pactMorning();PL*=1+inf/100;inf=Math.max(1,Math.round((inf-.5)*10)/10);dayStart={...S};dayMatch=0;dayLog=[];money+=salaryNow()-mortgage();updatePurse();}done();};
-  const after=()=>pact?pactOffer(pact,nextDay):ev?offer(ev,nextDay):nextDay();
+  const after0=()=>pact?pactOffer(pact,nextDay):ev?offer(ev,nextDay):nextDay();
+  // low bars tonight: count the days, and maybe someone hires the investigator
+  if(!last&&typeof INVESTIGATOR!=='undefined'){PX.low=PX.low||{};STATS.forEach(s=>{PX.low[s.k]=S[s.k]<INVESTIGATOR.low?(PX.low[s.k]||0)+1:0;});}
+  const after=()=>{const k=invDue(last);if(k)investigate(k,after0);else after0();};
   eveningPaper(diff,last,()=>{if(PX.weedTonight&&!secrets().includes('weed')){PX.weedTonight=false;revealSecret('weed',after);}else after();});
 }
 // One newspaper per evening: your biggest decision on the front page, everything else that happened inside.
@@ -1401,6 +1405,30 @@ function expose(next){
   updatePurse();
   const b=$('#cont');b.textContent='Ouch. Hide the receipts.';b.focus({preventScroll:true});
   b.onclick=()=>{const d=deadStat();if(d){layer.innerHTML='';return gameOver(d);}cause=null;next();};
+}
+// ---------- Vera Ferret, the hired investigator ----------
+function invDue(last){if(last||typeof INVESTIGATOR==='undefined'||day<INVESTIGATOR.from)return null;if(PX.invDay&&day-PX.invDay<INVESTIGATOR.every)return null;
+  const low=STATS.filter(s=>(PX.low||{})[s.k]>=INVESTIGATOR.days).sort((a,b)=>S[a.k]-S[b.k]);return low.length?low[0].k:null;}
+function investigate(k,next){
+  const I=INVESTIGATOR,st=STATS.find(s=>s.k===k),ch=CHARS.investigator,sc=INV_SCANDALS[Math.floor(Math.random()*INV_SCANDALS.length)],client=INV_CLIENTS[k]||'Someone';
+  PX.invDay=day;PX.low[k]=0;SND.knock&&SND.knock();const can=money>=I.cost;
+  layer.innerHTML=`<div class="veil letter"><div class="modal evt" role="dialog" aria-modal="true" aria-labelledby="inv-t">
+    <div class="kicker">Day ${day} · late evening · a knock on the door</div>
+    <h3 id="inv-t">Someone has been digging…</h3>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div><div class="hi">${N(ch.hello)}</div></div></div>
+    <div class="block"><div class="from">Hired by: ${client} · they’re tired of ${st.ico} ${st.lbl} at ${Math.round(S[k])}%</div><h4 style="font-size:17px">I found ${sc.you}.</h4>
+      <p class="offer">${N(`"My clients would love to share this with the press, {name}. Or… you make a generous donation, and they get a little of what they want. Your call."`)}</p>
+      <div class="opts"><button class="acc" id="inv-pay" type="button" ${can?'':'disabled'}>Pay the hush money<span class="cashchip">💶 −${eur(I.cost)}</span><span class="cashchip">${st.ico} +${I.boost}</span></button>
+      <button id="inv-no" type="button">Let it leak<span class="cashchip">🤝 ${I.leakTrust}</span><span class="cashchip">👀 media +${I.leakHeat}</span></button></div>
+      ${can?'':`<div class="small">You don’t have ${eur(I.cost)}. It’s going to leak.</div>`}</div>
+  </div></div>`;
+  $('#inv-pay').onclick=()=>{money-=I.cost;S[k]+=I.boost;updateStats();updatePurse&&updatePurse();SND.chime&&SND.chime();layer.innerHTML='';next();};
+  $('#inv-no').onclick=()=>{S.trust+=I.leakTrust;heat+=I.leakHeat;updateStats();
+    layer.innerHTML=paper({edition:'Morning edition',kick:'Leaked',head:N(sc.head),sub:'An anonymous source sent the pictures to every newsroom in Brussels at once',
+      photo:`<svg viewBox="0 0 120 120"><rect width="120" height="120" fill="#bdb0a2"/><text x="60" y="72" font-size="24" text-anchor="middle" textLength="108" lengthAdjust="spacingAndGlyphs">📸🕵️‍♀️📰</text></svg>`,
+      cap:N('Commissioner {name}, “no comment”.'),body:`<p>${N(`The Commission says there is “no question of any wrongdoing”. The pictures say otherwise. Sources close to ${client.toLowerCase()} say they are “simply relieved the truth is out”.`)}</p>`,
+      box:`<div class="np-box"><b>What it cost you</b>🤝 Trust ${I.leakTrust} · 👀 media attention +${I.leakHeat}</div>`,foot:'Weather: flashbulbs, scattered.',footR:'Turn the page →'});
+    const b=$('#cont');b.textContent='Next morning →';b.focus({preventScroll:true});b.onclick=()=>{layer.innerHTML='';next();};};
 }
 function offer(ev,nextDay){
   SND.chime();tip('offer','top');
