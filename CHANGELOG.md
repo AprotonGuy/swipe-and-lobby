@@ -1,5 +1,17 @@
 # Swipe & Lobby — changelog
 
+## v0.4 demo (8 oktober 2026)
+
+**Nieuw**
+- 12 nieuwe echte EU-dossiers voor bestaande lobbyisten, van de pesticidenwet en Euro 7 tot "Stop the clock" voor de AI-wet en de netwerkheffing voor Netflix.
+- Tegenlobby: 11 dossiers van vakbonden, consumenten, burgerinitiatieven, dierenwelzijn, klimaat-NGO's, digitale rechten en waakhonden. Met 7 nieuwe personages, onder wie Gustav Overtimesson, Agnès Garantie-Plus en Petra Papertrail, en 7 nieuwe sectorstempels.
+- Elk potje trekt 30 dossiers uit alle 46, waarvan 8 van de tegenlobby. Zo blijft een potje kort en is elk spel anders.
+- Mr. Quiz komt tussen de dossiers door met een vraag over Europa en de EU, uit Europedia. Goed antwoord: een bonus voor de balk die het nodig heeft. Fout antwoord: je leert hoe het echt zit.
+- De Broederschap heeft een proef: de dag na het bezoek van de hippie mag geen enkele keuze de planeet schaden, en kiezen voor de natuur kost die dag dubbel. Zak je, dan is het einde weg.
+
+**Verbeterd**
+- Alle nieuwe dossiers zijn getoetst met een officiële EU-bron en minstens twee onafhankelijke bronnen.
+
 ## v0.3.3 demo (8 oktober 2026)
 
 **Opgelost**

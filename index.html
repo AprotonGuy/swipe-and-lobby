@@ -376,6 +376,7 @@ body.lockL #btnL,body.lockR #btnR{opacity:.35;text-decoration:line-through}
 .shop .buy:disabled{opacity:.4;cursor:not-allowed}
 .shop .owned{font:600 12px/1 var(--f-body);color:var(--up)}
 .cashchip{display:inline-block;margin-top:4px;font:600 12px/1 var(--f-mono)}
+.quiz .opts button:disabled{opacity:1;cursor:default}.quiz .opts button.qz-wrong{background:rgba(192,57,43,.18);border-color:#c0392b;color:inherit}.quiz #qz-res a{color:inherit;text-decoration:underline}.quiz #qz-res .opts button{opacity:1}
 .char{display:flex;gap:12px;align-items:center;margin:10px 0 4px}
 .char svg{width:84px;height:84px;flex:none;border-radius:50%;background:rgba(57,43,53,.06);box-shadow:inset 0 0 0 1.5px rgba(57,43,53,.25)}
 .char .nm{font:800 18px/1.1 var(--f-display)}
@@ -413,6 +414,7 @@ body.lockL #btnL,body.lockR #btnR{opacity:.35;text-decoration:line-through}
 .night .pickbar button{appearance:none;border:1.5px solid #c9a24a;background:transparent;color:#eadfd4;border-radius:8px;padding:12px 8px;font:700 14px/1.2 var(--f-body);cursor:pointer}
 .night .pickbar button:hover{background:rgba(201,162,74,.15)}
 .promise-tag.pact{background:#5a3a4e}
+.promise-tag.trial{background:#2f7a35}
 .day-sum{display:flex;flex-wrap:wrap;gap:6px 12px;font:500 13px/1 var(--f-mono);font-variant-numeric:tabular-nums;margin:8px 0}
 .day-sum .p{color:#3d6b65}.day-sum .n{color:#a63a44}
 .paper-news .modal{text-align:left}
@@ -621,7 +623,7 @@ FOLLOW.forEach(f=>{f.follow=true;CARDS.push(f)});
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function start(){
   S={eco:50,clim:50,trust:50,corp:50};
-  deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual)); {const n=PER_DAY*(UNLOCK.compromise-1);for(let i=0;i<n&&i<deck.length;i++){if(CARDS[deck[i]].eu==='M'){const j=deck.findIndex((k,x)=>x>=n&&CARDS[k].eu!=='M');if(j>-1)[deck[i],deck[j]]=[deck[j],deck[i]];}}} idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
+  deck=shuffle(CARDS.map((_,i)=>i).filter(i=>!CARDS[i].follow&&!CARDS[i].react&&!CARDS[i].crisis&&!CARDS[i].quest&&!CARDS[i].ritual)); {const isC=k=>COUNTER_SECTORS.includes(CARDS[k].sector);const co=deck.filter(isC).slice(0,COUNTER_PER_GAME),bz=deck.filter(k=>!isC(k)).slice(0,DOSSIERS_PER_GAME-Math.min(COUNTER_PER_GAME,deck.filter(isC).length));deck=shuffle(co.concat(bz));} {const n=PER_DAY*(UNLOCK.compromise-1);for(let i=0;i<n&&i<deck.length;i++){if(CARDS[deck[i]].eu==='M'){const j=deck.findIndex((k,x)=>x>=n&&CARDS[k].eu!=='M');if(j>-1)[deck[i],deck[j]]=[deck[j],deck[i]];}}} idx=0; money=START_MONEY; heat=0; owned=[]; promises=new Map(); usedWorld=[]; day=1; layer.innerHTML=''; pending=[]; usedEv=[]; dayLog=[]; dayStart={...S}; dayMatch=0; cause=null; inGame=false; PX=newPX(); spawned=[]; hist=[]; warned={}; matchTotal=0; practicing=false; practiced=false; document.body.classList.remove('practice'); {const w=document.getElementById('warn');if(w)w.hidden=true;const g=document.getElementById('gerard');if(g)g.hidden=true;tipQ.length=0;tipBusy=false;} bonus=0; PL=1; inf=INFL_START; infShown=INFL_START; hikes=0; indexed=false;
   {PX.body=[];if(bodyName()){const seen=new Set();shuffle(deck.slice(2)).forEach(k=>{const c=CARDS[k];if(PX.body.length<BODY_VISITS&&!c.char&&!seen.has(c.sector)){seen.add(c.sector);PX.body.push(c.id);}});}}
   renderStats(); stage.innerHTML=''; $('.rcwrap').hidden=true; if(typeof updateSecTab==='function'){closeSecrets();updateSecTab();} title();
 }
@@ -670,6 +672,7 @@ const SND=(()=>{
    time:{beat:.5,ch:[C(57,60,64,69),C(53,57,60,65),C(60,64,67,72),C(55,59,62,67)],bass:C(45,41,48,43),pad:.04,wave:'triangle',perc:'clock',mp:.2},
    justice:{beat:.7,ch:[C(50,53,57,62),C(46,50,53,58),C(53,57,60,65),C(57,61,64,69)],bass:C(38,34,41,45),pad:.035,wave:'square',lp:1,mp:.15},
    ghost:{beat:.85,ch:[C(60,64,68,72),C(62,66,70,74),C(64,68,72,76),C(62,66,70,74)],bass:C(36,38,40,38),pad:.035,wave:'sine',mp:.5,mo:2,mw:'sine'},
+   quiz:{beat:.3,ch:[C(60,64,67,72),C(65,69,72,77),C(67,71,74,79),C(60,64,67,72)],bass:C(48,53,55,48),pad:.03,wave:'square',arp:1,perc:'tick',mp:.3,mw:'triangle'},
    socialist:{beat:.42,ch:[C(60,64,67,72),C(53,57,60,65),C(55,59,62,67),C(60,64,67,72)],bass:C(36,41,43,36),pad:.045,wave:'square',lp:1,perc:'march',mp:.3}};
   let T=THEMES.main,curTheme='main';
   const mnoise=(t,d,g,f,type='highpass')=>{const n=ctx.createBufferSource(),b=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*d),ctx.sampleRate),c=b.getChannelData(0);
@@ -990,7 +993,12 @@ function effDelta(c,dir,base){const k=practicing?1:stakes();const a=(base?base.s
   if(PX.debt&&PX.debt.day===day)a[PX.debt.i]*=2;
   if(PX.earth===day&&a[1]>0)a[1]=Math.round(a[1]*1.5);
   if(PX.rally)a[2]+=3;
+  if(trialOn(c)&&a[1]>=0)a.forEach((v,i)=>{if(i!==1&&v<0)a[i]=Math.round(v*TRIAL.cost);});
   return a;}
+// Brotherhood trial: the day after the hippie's visit, no choice may hurt the planet.
+const trialToday=()=>typeof TRIAL!=='undefined'&&!practicing&&PX.trialDay===day&&PX.trial==='pending';
+const trialCard=c=>!!c&&!c.practice&&!c.ritual&&!c.quest&&c.L&&c.R&&['L','R','M'].some(d=>baseDelta(c,d)[1]<0);
+const trialOn=c=>trialToday()&&trialCard(c);
 function forced(){
   if(idx>=deck.length)return null;
   if(practicing)return null;
@@ -1235,6 +1243,7 @@ function renderCards(deal){
   stage.appendChild(el);
   {const f=forced(),pr=f&&f.dir;el.classList.toggle('promisedR',pr==='R');el.classList.toggle('promisedL',pr==='L');el.classList.toggle('promisedM',pr==='M');document.body.classList.toggle('lockL',pr==='R'||pr==='M');document.body.classList.toggle('lockR',pr==='L'||pr==='M');
    if(f&&f.why!=='promise'){const t=FORCE_TAG[f.why];el.querySelector('.dossier').insertAdjacentHTML('beforeend',`<br><span class="promise-tag pact">${typeof t==='function'?t(f.dir):t}</span>`);}}
+  if(trialOn(c)){const d=el.querySelector('.dossier');if(d)d.insertAdjacentHTML('beforeend',`<br><span class="promise-tag trial">🌿 Brotherhood trial: choose nature${PX.trialBad?' · failed':''} · nature costs ×${TRIAL.cost}</span>`);}
   fillSheet(c);setSheet(false);bindDrag(el);busy=false;updatePacts();updateM();
   if(c.crisis&&!practicing)crisisClock(el,c);
   updateSecTab();
@@ -1298,6 +1307,7 @@ function decide(dir,deal){if(tipModal()){const t=$('#top');if(t){t.classList.add
   PX.calm=c.crisis?0:(STATS.every(s=>S[s.k]>=30&&S[s.k]<=70)?(PX.calm||0)+1:0);
   if(deal?deal.real:c.eu===dir){dayMatch++;matchTotal++;}
   hist.push({c,dir,dd,day});
+  if(trialOn(c)){PX.trialTot=(PX.trialTot||0)+1;if(dd[1]<0)PX.trialBad=(PX.trialBad||0)+1;else PX.trialGood=(PX.trialGood||0)+1;}
   if(c.quest==='weed'&&dir==='R'){PX.questOk=true;PX.weedTonight=true;}
   if(c.ritual&&dir==='R'){PX.ritual=(PX.ritual||0)+1;if(c.ritual===4&&PX.ritual>=4)PX.possessed=true;
     else setTimeout(()=>toastText(['🕯️ Somewhere in the archive, a candle lights itself.','🖼️ The portrait in the hall seems to smile. It didn’t before.','✍️ Your hand still tingles from the red ink.'][c.ritual-1]),900);}
@@ -1319,7 +1329,46 @@ function flow(last){
   if(endOfDay&&!last.dayDone)return endDay(()=>flow({...last,dayDone:true}));
   if(idx>=deck.length)return win();
   if(last.dayDone)return gate();
-  renderCards();updateStats();if(last.c)toast(last.c,last.dir,last.dd,last.ip);checkWarn();
+  const go=()=>{renderCards();updateStats();if(last.c)toast(last.c,last.dir,last.dd,last.ip);checkWarn();};
+  if(last.c&&quizDue())return mrQuiz(go);
+  go();
+}
+// Mr. Quiz: between two dossiers of the same day, never right before a crisis or during the practice round.
+function quizDue(){
+  if(typeof QUIZ==='undefined'||!QUIZ_Q.length||practicing||day<QUIZ.from||PX.possessed)return false;
+  if(PX.quizDay===day)return false;const nx=CARDS[deck[idx]];if(!nx||nx.crisis||nx.ritual)return false;
+  return Math.random()<QUIZ.chance;}
+function mrQuiz(next){
+  PX.quizDay=day;PX.quizUsed=PX.quizUsed||[];
+  let pool=QUIZ_Q.map((_,i)=>i).filter(i=>!PX.quizUsed.includes(i));if(!pool.length){PX.quizUsed=[];pool=QUIZ_Q.map((_,i)=>i);}
+  const qi=pool[Math.floor(Math.random()*pool.length)],q=QUIZ_Q[qi];PX.quizUsed.push(qi);
+  // the prize: the bar furthest from the middle, if it is in danger; otherwise cash
+  const far=STATS.map((s,i)=>({s,i,d:Math.abs(S[s.k]-50)})).sort((a,b)=>b.d-a.d)[0];
+  const fix=far.d>=50-QUIZ.danger?far:null,dir=fix?(S[fix.s.k]<50?1:-1):0;
+  const prize=fix?`${fix.s.ico} ${fix.s.lbl} ${dir>0?'+':'−'}${QUIZ.boost}`:`💶 +${eur(QUIZ.cash)}`;
+  const pitch=fix?`Answer right and I’ll sort out your ${fix.s.lbl} problem.`:`Answer right and there’s a little prize money in it.`;
+  const ch=CHARS.quiz;SND.theme&&SND.theme('quiz');SND.chime&&SND.chime();
+  layer.innerHTML=`<div class="veil letter"><div class="modal evt quiz" role="dialog" aria-modal="true" aria-labelledby="qz-t">
+    <div class="kicker">Day ${day} · between two meetings · ding ding!</div>
+    <h3 id="qz-t">Pop quiz!</h3>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div><div class="hi">${N(ch.hello)}</div></div></div>
+    <div class="block"><div class="from">Prize: <span class="cashchip">${prize}</span> · ${pitch}</div><h4 style="font-size:17px">${q.q}</h4>
+      <div class="opts">${q.o.map((o,i)=>`<button type="button" data-qa="${i}">${o}</button>`).join('')}</div>
+      <div id="qz-res" hidden></div></div>
+  </div></div>`;
+  layer.querySelectorAll('[data-qa]').forEach(b=>b.onclick=()=>{
+    const pick=+b.dataset.qa,ok=pick===q.c;
+    layer.querySelectorAll('[data-qa]').forEach(x=>{x.disabled=true;const i=+x.dataset.qa;if(i===q.c)x.classList.add('acc');else if(i===pick)x.classList.add('qz-wrong');});
+    if(ok){if(fix){S[fix.s.k]+=dir*QUIZ.boost;}else{money+=QUIZ.cash;updatePurse&&updatePurse();}updateStats();}
+    (ok?SND.chime:SND.knock)&&(ok?SND.chime():SND.knock());
+    const r=$('#qz-res');r.hidden=false;
+    r.innerHTML=`<h4 style="font-size:16px;margin-top:10px">${ok?`Ding ding ding! Correct. <span class="cashchip">${prize}</span>`:`Bzzzt. Not quite: it’s “${q.o[q.c]}”.`}</h4>
+      <p class="offer">${q.fact}</p>
+      <div class="small">Source: ${q.src.map(s=>`<a href="${s[1]}" target="_blank" rel="noopener">${s[0]}</a>`).join(' · ')}</div>
+      <div class="small" style="opacity:.7">Questions from Europedia</div>
+      <div class="opts"><button class="acc" id="qz-ok" type="button">Back to work →</button></div>`;
+    const k=$('#qz-ok');k.focus({preventScroll:true});k.onclick=()=>{layer.innerHTML='';next();};
+  });
 }
 
 const WEATHER=['Weather: heavy cloud over the Berlaymont, 100% chance of lobbyists.','Weather: calm, except in the meeting room.','Weather: light drizzle of amendments.','Weather: sunny, unless you drive a diesel.','Weather: thick fog around the Transparency Register.'];
@@ -1350,7 +1399,8 @@ function endDay(done){
   // low bars tonight: count the days, and maybe someone hires the investigator
   if(!last&&typeof INVESTIGATOR!=='undefined'){PX.low=PX.low||{};STATS.forEach(s=>{PX.low[s.k]=S[s.k]<INVESTIGATOR.low?(PX.low[s.k]||0)+1:0;});}
   const after=()=>{const k=invDue(last);if(k)investigate(k,after0);else after0();};
-  eveningPaper(diff,last,()=>{if(PX.weedTonight&&!secrets().includes('weed')){PX.weedTonight=false;revealSecret('weed',after);}else after();});
+  eveningPaper(diff,last,()=>{const w=()=>{if(PX.weedTonight&&!secrets().includes('weed')){PX.weedTonight=false;revealSecret('weed',after);}else after();};
+    if(typeof TRIAL!=='undefined'&&PX.trialDay===day&&PX.trial==='pending')trialVerdict(w);else w();});
 }
 // One newspaper per evening: your biggest decision on the front page, everything else that happened inside.
 function eveningPaper(diff,last,done){
@@ -1667,7 +1717,7 @@ const futText=t=>N(String(t).replace(/\{org\}/g,futOrg()));
 function futStatus(){const chance=hist.filter(h=>h.c&&h.c.L&&h.c.R&&(h.c.L[1]>0||h.c.R[1]>0)),green=chance.filter(h=>h.dd&&h.dd[1]>0).length,share=chance.length?green/chance.length:0;
   return {job:{ok:true,prog:'All '+hist.length+' dossiers done'},
     island:{ok:money>=ISLAND_PRICE,prog:eur(money)+' of '+eur(ISLAND_PRICE)},
-    weed:{ok:share>=GREEN_SHARE&&!!PX.questOk,prog:Math.round(share*100)+'% of '+Math.round(GREEN_SHARE*100)+'% nature choices'}};}
+    weed:{ok:share>=GREEN_SHARE&&!!PX.questOk&&PX.trial!=='failed'&&(PX.trial==='passed'||!(PX.trialDay<=day)||typeof TRIAL==='undefined'),prog:Math.round(share*100)+'% of '+Math.round(GREEN_SHARE*100)+'% nature choices'}};}
 // ---------- Secret list: endings you hear about from people in Brussels ----------
 const secrets=()=>(PX.secrets=PX.secrets||[]);
 function secretDue(){if(typeof SECRETS==='undefined'||day<SECRET_FROM||PX.secretDay===day)return null;
@@ -1691,7 +1741,18 @@ function revealSecret(k,then){
     <div class="block"><div class="from">🤫 New on your Secret list</div><h4 style="font-size:17px">${F.ico} ${F.name}</h4><div class="small">Needs: ${F.need.toLowerCase()}</div></div>
     <button class="next" id="sec-ok" type="button">Add to my Secret list</button></div></div>`;
   $('#sec-ok').focus({preventScroll:true});
-  $('#sec-ok').onclick=()=>{layer.innerHTML='';updateSecTab();const d=$('#secTab .secdot');if(d)d.hidden=false;if(then)then();};
+  $('#sec-ok').onclick=()=>{if(k==='weed'&&typeof TRIAL!=='undefined'&&!PX.trial){PX.trial='pending';PX.trialDay=day+(then?1:0);}layer.innerHTML='';updateSecTab();const d=$('#secTab .secdot');if(d)d.hidden=false;if(then)then();};
+}
+function trialVerdict(then){
+  const ok=!PX.trialBad;PX.trial=ok?'passed':'failed';const ch=CHARS.hippie;SND.theme&&SND.theme('hippie');ok?(SND.chime&&SND.chime()):(SND.knock&&SND.knock());
+  layer.innerHTML=`<div class="veil letter"><div class="modal evt secret" role="dialog" aria-modal="true" aria-labelledby="tr-t">
+    <div class="kicker">Day ${day} · Evening · the smell of incense in the corridor</div>
+    <h3 id="tr-t">${ok?'The Brotherhood has seen enough':'The Brotherhood turns away'}</h3>
+    <div class="char">${ch.svg}<div><div class="nm">${ch.name}</div><div class="tg">${ch.tag}</div><div class="hi">${N(ok?TRIAL.pass:TRIAL.fail)}</div></div></div>
+    <div class="block"><div class="from">🌿 Brotherhood trial</div><h4 style="font-size:17px">${ok?'✓ Trial passed':'✗ Trial failed'}</h4>
+      <div class="small">${ok?`${PX.trialGood||0} dossier${(PX.trialGood||0)===1?'':'s'} today without harming the planet.`:`${PX.trialBad} choice${PX.trialBad===1?'':'s'} today hurt the planet. The Brotherhood ending is gone for this term.`}</div></div>
+    <button class="next" id="tr-ok" type="button">${ok?'Peace, man':'Fair enough'}</button></div></div>`;
+  $('#tr-ok').focus({preventScroll:true});$('#tr-ok').onclick=()=>{layer.innerHTML='';updateSecTab();then();};
 }
 function openSecrets(){
   const st=secStatus();const d=$('#secTab .secdot');if(d)d.hidden=true;SND.paper&&SND.paper();
@@ -1699,7 +1760,7 @@ function openSecrets(){
     <div class="kicker">Only for your eyes</div><h3 id="sl-h">🤫 Secret list</h3>
     <p class="small">Ways this term could end, if you play it right. People in Brussels let things slip. Keep listening.</p>
     <div class="futs">${FUTURES.map(f=>{const known=secrets().includes(f.id),s=st[f.id];
-      return known?`<div class="fut sl${s.ok?' done':''}"><span class="fi">${f.ico}</span><span class="ft"><b>${f.name} ${s.ok?'<em class="chk">✓</em>':''}</b><small>Needs: ${f.need}</small><small class="fp">${s.prog}</small></span></div>`
+      return known?`<div class="fut sl${s.ok?' done':''}"><span class="fi">${f.ico}</span><span class="ft"><b>${f.name} ${s.ok?'<em class="chk">✓</em>':''}</b><small>Needs: ${f.need}</small><small class="fp">${s.prog}</small>${f.id==='weed'&&PX.trial?`<small class="fp">${PX.trial==='passed'?'🌿 Trial passed ✓':PX.trial==='failed'?'🌿 Trial failed ✗ · the Brotherhood has turned its back':PX.trialDay>day?'🌿 Trial: tomorrow. Harm no nature all day':'🌿 Trial: today. Harm no nature'}</small>`:''}</span></div>`
         :`<div class="fut sl locked"><span class="fi">🔒</span><span class="ft"><b>???</b><small>Nobody has told you about this one yet.</small></span></div>`;}).join('')}
       <div class="fut sl locked"><span class="fi">${bodyName()?'👻':'🔒'}</span><span class="ft"><b>???</b><small>${bodyName()?`The 13th floor still remembers ${escH(bodyName())}.`:'Some secrets are better left buried.'}</small></span></div></div>
     </div>`;
