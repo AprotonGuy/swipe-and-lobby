@@ -1,5 +1,36 @@
 # Swipe & Lobby — changelog
 
+## v0.6 demo (9 oktober 2026)
+
+**Nieuw: papierstijl**
+- Het hele spel ziet er nu uit als geknipt papier op je bureau: echte papiertexturen, schaduwen, plakband en blauwe paperclips. De kleuren van het spel blijven hetzelfde.
+- Nieuw logo in het startmenu: "Swipe" en "Lobby" op papieren stroken met een rood "&".
+- De balken hebben getekende iconen en elk een eigen kleur. Sleep je een dossier, dan wordt het icoon groen en springt het omhoog, of rood en zakt het. Te laag of te hoog maakt balk en icoon rood.
+- Na een swipe groeien de iconen die stijgen en krimpen de iconen die dalen. Bij Approve zoomt het scherm licht in, bij Reject trilt het even. Tijdens het slepen gloeit links rood en rechts groen.
+- Goedkeuren is nu overal groen (knop, stempel, "You: approved"). Blauw blijft de kleur voor "wat er echt gebeurde".
+- De reality check is een EU-blauwe strook. Open is het een blauwe map met een getypt rapport.
+- Nieuwe indeling van het speelscherm: grote dag-regel, papieren menuknop, en onderaan je geld, de maskerknop en de media.
+
+**Nieuw: groter verhaal**
+- Grote stemming (vanaf potje 2): elk potje draait om één echt groot EU-dossier, zoals de AI Act of de Klimaatwet. Op de laatste dag stemmen Parlement en Raad over jouw versie. Zakt hij, dan volgt een motie van wantrouwen.
+- Zes groepen in Brussel (Industry, Tech, Farmers, Greens, Citizens, Watchdogs) onthouden wat je doet. De maskerknop laat zien wie je mag en wie boos is.
+- Netwerkdagen (vanaf potje 3): tussen de beslisdagen door spreek je lobbyisten. Je kiest 1, 2 of 3 afspraken en met wie. Wie je naar huis stuurt levert vertrouwen op en maakt zijn rivalen blij.
+- Bij een afspraak kies je uit zes tegels: koffie, cadeau, duur diner, je stem beloven, all-inclusive vakantie of de deur wijzen. Elke tegel legt eerst uit wat hij doet.
+- Publiekscampagnes: soms wil een groep dat je een besluit terugdraait. Sommige zijn nep (astroturf).
+- De draaideur: een baan-aanbod als lobbyist, en echte voorbeelden in de krant.
+- "What you learned": aan het eind drie echte feiten over lobbyen, met links.
+
+**Verbeterd**
+- Gerard geeft alleen tips over dingen die je al hebt vrijgespeeld, en zijn briefjes blijven staan tot je op "Got it" drukt.
+- "Diary" heet nu "agenda". Lange namen in de agenda schuiven langzaam heen en weer.
+- Unlocks die nog dicht zijn tonen alleen "???".
+- Is je compromis voor vandaag op, dan zegt het spel dat nu in plaats van niets te doen.
+
+**Opgelost**
+- De agenda paste niet op smalle telefoons.
+- Op desktop viel de kaart achter de rand bij het wegswipen.
+- Je kon per ongeluk plaatjes wegslepen.
+
 ## v0.5.4 demo (8 oktober 2026)
 
 **Nieuw**

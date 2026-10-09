@@ -1,5 +1,5 @@
 // Build version: shown on the title screen. Raised with every build ("zet het online").
-const GAME_VERSION='v0.5.4 demo';
+const GAME_VERSION='v0.6 demo';
 // Swipe & Lobby — all game content in one place.
 // The game (index.html) and the control room (regiekamer.html) both read this file.
 // Effects are always [Economy, Climate, Trust, Corporate Power].
@@ -946,7 +946,7 @@ const TIPS={
  intro:'Boooo! … Sorry. Old habit. I’m Gerard Loby. I had your job before you, {name}. Lobbyist first, then Commissioner. I didn’t make it to the end of my term. Now I’m stuck haunting this office, so I might as well help you.',
  card1:'That’s a lobbyist. Read what they want. Swipe right for yes, left for no. Simple. Too simple, if you ask me.',
  practice:'Before the real lobbyists come in, let’s practise. I’ll put a card on your desk, from me. Normally a lobbyist sits there. Read what they want, then swipe right for yes or left for no.',
- practiceDone:'See? The bars moved, just a little. That was practice. Here’s your diary for today: the real lobbyists. Open the door when you’re ready.',
+ practiceDone:'See? The bars moved, just a little. That was practice. Here’s your agenda for today: the real lobbyists. Open the door when you’re ready.',
  card2:"Drag the card a little. See the dots on the bars up top? Red means down, green means up. Too high or too low and people get very mad. Trust me, I know.",
  card3:'Not sure? Open the reality check under the card. That’s what Brussels really did. Back in my day, nobody read those.',
  paper:'Every evening, the paper. Red is your Europe. Blue is what really happened. Spot the difference.',
@@ -1520,7 +1520,7 @@ const QUIZ_Q=[
 // Unlocks across games. A "term" is one game; term 1 is your first game on this device.
 // features: from which term a system is switched on. Dossiers: starter pool in term 1, waves after that, the rest from `allFrom`.
 const PROGRESSION={
- features:{compromise:2,crisis:2,shop:3,offers:3,media:4,pacts:5,world:5,inflation:5,investigator:6,quiz:6},
+ features:{compromise:2,crisis:2,bigfile:2,campaign:2,network:3,revolving:4,shop:3,offers:3,media:4,pacts:5,world:5,inflation:5,investigator:6,quiz:6},
  starter:['keep-our-own-charger','keep-roaming-charges','save-the-straw','no-shock-photos','no-gatekeeper-law','privacy-but-flexible','no-cap-on-bonuses','keep-the-neonicotinoids','scrap-the-nature-restoration-law','end-the-cage-age','stop-the-shark-fin-trade','a-little-slack-in-the-road-test','natural-gas-is-green-too','make-platforms-pay','free-co2-allowances','delay-the-deforestation-law','no-traffic-light-on-the-label','ditch-the-reusable-cup','let-us-shoot-the-wolf','no-tax-on-trading'],
  waves:{
   2:['weedkiller-for-15-more-years','let-us-regulate-ai-ourselves','couriers-are-entrepreneurs','save-the-combustion-engine','a-decent-minimum-wage','a-right-to-repair','water-is-a-human-right','park-the-cookie-law'],
@@ -1528,9 +1528,109 @@ const PROGRESSION={
  allFrom:4,
  ladder:[
   {term:1,ico:'📁',name:'Dossiers, Gerard and the evening paper'},
-  {term:2,ico:'⚖️',name:'Compromises and crises'},
-  {term:3,ico:'🛍️',name:'The shop and backroom deals'},
-  {term:4,ico:'👀',name:'Media attention'},
+  {term:2,ico:'⚖️',name:'Compromises, crises, the big file and public campaigns'},
+  {term:3,ico:'🛍️',name:'The shop, backroom deals and networking days'},
+  {term:4,ico:'👀',name:'Media attention and the revolving door'},
   {term:5,ico:'🌙',name:'Midnight visitors, world news and inflation'},
   {term:6,ico:'🔔',name:'Vera Ferret and Quizy Tingel'},
   {terms:1,ico:'🤫',name:'The Secret list, the Brotherhood trial and the ghost path',hint:'Finish a full term once'}]};
+
+// ---------- Blocs & the big file ----------
+// Every dossier belongs to a bloc (via its sector). Approve: that bloc +1. Reject: that bloc −1 and its opponents +1.
+// A bloc's mood shows on each lobbyist's portrait: 😠 (≤ −2), 😐, 😊 (≥ 2). A bloc "backs you" at +1 or more.
+const BLOCS={
+ IND:{ico:'🏭',name:'Industry',sectors:['BIZ','STEEL','PLAST','AUTO','GAS','FOOD','TOB','BANK','DEF','FOREIGN','SEC'],opp:['GREEN','CIT']},
+ TECH:{ico:'💻',name:'Tech',sectors:['TECH','TEL','GIG','GAMES','MUSIC','AI'],opp:['WATCH','CIT']},
+ FARM:{ico:'🚜',name:'Farmers',sectors:['FARM','AGRO','WOOD'],opp:['GREEN']},
+ GREEN:{ico:'🌱',name:'Greens',sectors:['NGO','ANIMAL'],opp:['FARM','IND']},
+ CIT:{ico:'✊',name:'Citizens',sectors:['UNION','CONSUMER','CITIZEN'],opp:['IND']},
+ WATCH:{ico:'🔍',name:'Watchdogs',sectors:['RIGHTS','WATCH'],opp:['TECH']}};
+// One big, real EU file per term (from term 2). On the last day Parliament and the Council vote on your version of it.
+// A = ambitious, M = compromise (needs 4 blocs that aren't angry), W = watered down. need = blocs that must back you.
+const BIGFILES=[
+ {id:'climate-law',ico:'🌍',name:'the European Climate Law',year:'2021',
+  intro:'Climate neutrality by 2050, written into law. The climate groups want it tough, industry and farmers want it soft.',
+  A:{label:'Cut 60% by 2030, binding for every country',need:['GREEN','CIT'],fx:[-6,12,6,-8]},
+  M:{label:'At least 55% "net" by 2030, forests count',fx:[-2,6,3,-2]},
+  W:{label:'Climate neutral by 2050, decide the targets later',need:['IND','FARM'],fx:[6,-8,-4,8]},
+  eu:'M',real:'In 2021 the EU made climate neutrality by 2050 law, with a 2030 target of at least 55% "net": carbon taken up by forests and soils may count, up to 225 million tonnes. Parliament had wanted 60%. Parliament voted 442 to 203; in the Council only Bulgaria abstained.',
+  src:[['Regulation (EU) 2021/1119',"https://eur-lex.europa.eu/eli/reg/2021/1119/oj"],['Council of the EU: Council adopts European climate law (2021)','https://www.consilium.europa.eu/en/press/press-releases/2021/06/28/council-adopts-european-climate-law/'],['European Parliament Legislative Train: European Climate Law','https://www.europarl.europa.eu/legislative-train/theme-a-european-green-deal/file-european-climate-law'],['JURIST: EU Council approves climate law','https://www.jurist.org/news/2021/06/european-union-council-approves-greenhouse-emissions-law/']]},
+ {id:'ai-act',ico:'🤖',name:'the AI Act',year:'2024',
+  intro:'The world’s first big law on artificial intelligence. Tech wants a light touch, the watchdogs want bans on mass surveillance.',
+  A:{label:'Ban facial recognition, binding rules for big AI',need:['WATCH','CIT'],fx:[-4,0,10,-8]},
+  M:{label:'Rules for big models, exceptions for the police',fx:[0,0,4,-2]},
+  W:{label:'Let the AI industry write its own code',need:['TECH','IND'],fx:[6,0,-8,8]},
+  eu:'M',real:'The AI Act (2024) bans social scoring and emotion recognition at work and in schools, and sets rules for large AI models. The push to exempt those models was largely rejected, but police may still use real-time facial recognition in serious cases. Parliament voted 523 to 46.',
+  src:[['Regulation (EU) 2024/1689 (AI Act)','https://eur-lex.europa.eu/eli/reg/2024/1689/oj'],['HowTheyVote: AI Act final vote','https://howtheyvote.eu/votes/166051'],['Corporate Europe Observatory: Byte by byte (2023)','https://corporateeurope.org/en/2023/11/byte-byte'],['EDRi: AI Act deal reached, but too soon to celebrate','https://edri.org/our-work/eu-ai-act-deal-reached-but-too-soon-to-celebrate/']]},
+ {id:'gdpr',ico:'🔒',name:'the GDPR',year:'2016',
+  intro:'One privacy law for all of Europe. Silicon Valley and the US government lobby hard; the privacy watchdogs push back.',
+  A:{label:'Fines up to 5%, real consent for everything',need:['WATCH','CIT'],fx:[-4,0,10,-8]},
+  M:{label:'Fines up to 4%, one rulebook for Europe',fx:[-1,0,6,-4]},
+  W:{label:'Let companies use data on "legitimate interest"',need:['TECH','IND'],fx:[6,0,-8,8]},
+  eu:'M',real:'After a record of around 4,000 amendments and heavy lobbying, including by the US government, the GDPR was adopted in 2016 and has applied since May 2018. Fines go up to 4% of worldwide turnover: the Commission had proposed 2%, Parliament wanted 5%. Data breaches must be reported within 72 hours.',
+  src:[['Regulation (EU) 2016/679 (GDPR)','https://eur-lex.europa.eu/eli/reg/2016/679/oj'],['EDPB: legal framework','https://www.edpb.europa.eu/about-edpb/legal-framework_en'],['Access Now: FOIA documents reveal US lobbying against the GDPR','https://www.accessnow.org/foia-documents-reveal-intensity-of-us-lobbying-against-the-dpr/'],['Privacy International: lobbyists found writing EU data protection law','https://privacyinternational.org/press-release/1470/amazon-and-ebay-lobbyists-found-be-writing-eu-data-protection-law-copy-paste']]},
+ {id:'dma',ico:'🏪',name:'the Digital Markets Act',year:'2022',
+  intro:'Rules for the biggest platforms: Apple, Google, Meta, Amazon. Big Tech spends record sums in Brussels to soften it.',
+  A:{label:'Strict rules for Big Tech, fines up to 20%',need:['CIT','WATCH'],fx:[2,0,8,-12]},
+  M:{label:'Gatekeeper rules, fines up to 10%',fx:[2,0,4,-6]},
+  W:{label:'Let the platforms police themselves',need:['TECH'],fx:[4,0,-8,10]},
+  eu:'A',real:'The Digital Markets Act (2022) came out stronger than proposed: messaging apps must work with rivals, browsers are covered and repeat offenders face fines of up to 20%. Parliament voted 588 to 11. In 2025 Apple (€500m) and Meta (€200m) got the first fines; in 2026 Google was fined €890m.',
+  src:[['Regulation (EU) 2022/1925 (DMA)','https://eur-lex.europa.eu/eli/reg/2022/1925/oj'],['European Commission: six gatekeepers designated','https://digital-markets-act.ec.europa.eu/commission-designates-six-gatekeepers-under-digital-markets-act-2023-09-06_en'],['HowTheyVote: DMA final vote','https://howtheyvote.eu/votes/146588'],['Corporate Europe Observatory: Big Tech lobby spending at all-time high','https://corporateeurope.org/en/2021/08/big-tech-takes-eu-lobby-spending-all-time-high']]},
+ {id:'nature-restoration',ico:'🦋',name:'the Nature Restoration Law',year:'2024',
+  intro:'Bring back Europe’s damaged nature. Farmers and the centre-right campaign against it; scientists and NGOs push for it.',
+  A:{label:'Restore 20% of nature by 2030, farmland included',need:['GREEN'],fx:[-6,12,4,-4]},
+  M:{label:'Restoration, with an "emergency brake" for farmers',fx:[-2,6,2,-1]},
+  W:{label:'Make it all voluntary',need:['FARM','IND'],fx:[4,-10,-4,6]},
+  eu:'M',real:'The Nature Restoration Law (2024) survived by a hair: farmland targets were softened and an "emergency brake" was added. Parliament voted 329 to 275. In the Council it only passed because Austria’s environment minister voted yes against her coalition partner; six countries voted against.',
+  src:[['Regulation (EU) 2024/1991','https://eur-lex.europa.eu/eli/reg/2024/1991/oj'],['Council of the EU: minutes with the vote, 17 June 2024','https://data.consilium.europa.eu/doc/document/ST-11311-2024-INIT/en/pdf'],['Euronews: law survives knife-edge vote (2023)','https://www.euronews.com/my-europe/2023/07/12/nature-restoration-law-survives-knife-edge-vote-in-the-european-parliament-amid-right-wing'],['Al Jazeera: EU states adopt nature restoration law','https://www.aljazeera.com/amp/news/2024/6/17/eu-states-push-past-opposition-to-adopt-landmark-nature-restoration-law']]},
+ {id:'migration-pact',ico:'🛂',name:'the Pact on Migration and Asylum',year:'2024',
+  intro:'New EU rules on asylum and borders. Human-rights groups fight for protection; the border-tech industry and tough-line governments push for control.',
+  A:{label:'No children in detention, real sharing of asylum seekers',need:['WATCH','CIT'],fx:[-4,0,8,-6]},
+  M:{label:'Shared rules, but countries may pay €20,000 per person instead of hosting',fx:[0,0,2,0]},
+  W:{label:'Fast border procedures, no shared responsibility',need:['IND'],fx:[2,0,-8,6]},
+  eu:'M',real:'The Pact (2024) came out tougher than proposed: faster border procedures, families with children may be held, and fingerprints from age 6. Countries share the burden but may pay €20,000 per person instead of hosting. Parliament passed the core law 322 to 266; Hungary and Poland voted against all of it in the Council. It has applied since June 2026.',
+  src:[['Council of the EU: Pact on Migration and Asylum','https://www.consilium.europa.eu/en/policies/eu-pact-migration-asylum/'],['Council of the EU: votes per act, 14 May 2024','https://data.consilium.europa.eu/doc/document/ST-10093-2024-INIT/en/pdf'],['HowTheyVote: Parliament vote, 10 April 2024','https://howtheyvote.eu/votes/167531'],['PICUM: NGOs’ open letter on the Pact','https://picum.org/blog/open-letter-eu-human-rights-risks-migration-pact/'],['Corporate Europe Observatory: Lobbying Fortress Europe (2021)','https://corporateeurope.org/en/lobbying-fortress-europe']]}];
+const BIG={backs:1,happy:2,angry:-2,compromiseBlocs:4,hintChance:.35};
+// Networking days (from term 3): between decision days, three lobbyists drop by. Pick one thing per lobbyist.
+const NETWORK={perDay:3,lunch:5,heat:10,vacation:12,vacationHeat:20,decisionDays:5,
+ acts:[{id:'coffee',ico:'☕',name:'Coffee',d:1,c:'#7a3b2e',desc:'A quick coffee in the Berlaymont canteen. Cheap, friendly, forgotten by tomorrow.'},
+  {id:'gift',ico:'🎁',name:'Give a gift',d:3,c:'#e8c200',desc:'Hand over something from your collection. Generous… and journalists love a good gift story.'},
+  {id:'lunch',ico:'🍽️',name:'Expensive dinner',d:2,c:'#3f7d8a',desc:'A long dinner on your expense account. Lobbyists love being listened to.'},
+  {id:'promise',ico:'🤝',name:'Promise your vote',d:3,c:'#2f4f9a',desc:'Give your word that you will approve their dossier. They will love you for it, but you cannot change your mind later.'},
+  {id:'vacation',ico:'🌴',name:'All paid vacation',d:4,c:'#a83a86',desc:'Fly them somewhere sunny, all expenses paid. Nothing buys friendship faster, and nothing looks worse in the paper.'},
+  {id:'no',ico:'🚪',name:'Show them the door',d:-1,c:'#4a8a45',desc:'Politely show them the door. They will not like it, but voters like a Commissioner who says no to lobbyists.'}]};
+
+// ---------- Lobbying tactics: public campaigns, the revolving door, and what you learned ----------
+// Public campaign (from term 2): sometimes, a few dossiers after you decide, a campaign wants you to reverse it.
+// After you approve, the other side campaigns; after you reject, a "spontaneous" citizens' group appears (astroturfing).
+const CAMPAIGN={chance:.2,max:2,heat:5,
+ groups:{
+  GREEN:{name:'Fern Hashtagson',role:'Campaign coordinator, climate coalition',org:'A coalition of climate groups',sector:'NGO'},
+  CIT:{name:'Hugo Megaphone',role:'Organiser, citizens’ petition',org:'A citizens’ petition',sector:'CITIZEN'},
+  WATCH:{name:'Lena Livestream',role:'Campaigner, digital rights',org:'A digital-rights campaign',sector:'RIGHTS'},
+  IND:{name:'Chad Grassroots',role:'Totally independent citizen',org:'“Citizens for Common Sense” (funded by… nobody knows)',sector:'BIZ',astro:true},
+  TECH:{name:'Kevin Keyboard',role:'Spokesperson, “Save Our Internet”',org:'“Save Our Internet” (sponsored by the platforms)',sector:'TECH',astro:true},
+  FARM:{name:'Bert Tractorson',role:'Convoy leader',org:'A tractor convoy',sector:'FARM'}},
+ real:'Public campaigns are a classic lobbying tool. Against the EU copyright reform’s "upload filters", more than 5 million people signed a petition in 2019; the "End the Cage Age" citizens’ initiative gathered 1.4 million signatures.',
+ realAstro:'Campaigns that look like ordinary citizens but are run or paid for by companies are called "astroturfing", after a brand of fake grass. Watchdogs such as Corporate Europe Observatory and LobbyControl try to trace who funds them.',
+ src:[['Directive (EU) 2019/790 (copyright)','https://eur-lex.europa.eu/eli/dir/2019/790/oj'],['European Commission: reply to End the Cage Age','https://citizens-initiative.europa.eu/reply-and-follow-end-cage-age-european-citizens-initiative_en'],['Corporate Europe Observatory','https://corporateeurope.org']]};
+// The revolving door (from term 4): once per term a lobbyist offers you a job for after your term; and sometimes it's in the news.
+const REVOLVING={from:3,chance:.35,cash:15,heat:15,trust:-4,refuse:2,
+ offer:'"After your term, {name}, a seat on our board. Purely advisory. Very well paid. We’ll even wait the cooling-off period. Mostly."',
+ real:'Former Commission President José Manuel Barroso joined Goldman Sachs in 2016, about 20 months after leaving office. Since 2018 former Commissioners must wait 2 years (the President 3) before lobbying the Commission.',
+ news:[
+  {head:'Ex-Commission President joins Goldman Sachs',sub:'José Manuel Barroso takes a job at the bank about 20 months after leaving office',text:'In 2016 the former Commission President became non-executive chairman of Goldman Sachs International. After the outcry, the Commission tightened its code: since 2018 former Commissioners wait 2 years, and the President 3, before lobbying their old colleagues.'},
+  {head:'Uber Files: ex-Commissioner helped Uber during her cooling-off',sub:'Neelie Kroes was refused permission, then helped informally anyway, leaked files show',text:'Neelie Kroes left the Commission in 2014. In 2015 the Commission refused to let her join Uber’s advisory board within her 18-month cooling-off period. The Uber Files (2022) showed she helped Uber informally anyway; she joined its board in May 2016. She denies any role before then.'}],
+ src:[['Euronews: tighten rules after Barroso (2016)','https://www.euronews.com/2016/07/22/tighten-rules-or-live-to-regret-it-brussels-told-to-act-after-barroso'],['Global Government Forum: new code for Commissioners','https://www.globalgovernmentforum.com/strict-new-anti-graft-code-european-commissioners'],['DutchNews: Kroes breached ethics rules','https://dutchnews.nl/2022/07/former-commissioner-neelie-kroes-breached-ethics-rules-by-lobbying-for-uber'],['Corporate Europe Observatory: Kroes through the revolving door','https://corporateeurope.org/en/kroes-thru-revolving-door']]};
+// "What you learned" at the end of every term: one fact from a dossier you played, one tactic, one about the system.
+const LEARN={
+ tactics:{
+  campaign:'Public campaigns, petitions and hashtags are real lobbying tools, and so are fake "grassroots" groups paid for by companies (astroturfing).',
+  revolving:'The revolving door: former Commissioners often join the companies they used to regulate. Barroso went to Goldman Sachs; the cooling-off period is now 2 years (3 for the President).',
+  copy:'Lobbyists sometimes write amendments that MEPs copy word for word. Volunteers behind LobbyPlag found GDPR amendments copied from papers by Amazon, eBay and the banks.',
+  network:'Commissioners meet lobbyists all the time. That is allowed, but since 2014 they must publish those meetings, and since 2021 many meetings require the lobbyist to be in the Transparency Register.'},
+ system:[
+  '17,269 organisations from 140 countries were in the EU Transparency Register in April 2026; almost half are companies and trade associations, 27% are NGOs.',
+  'Meta is the biggest company lobby spender in Brussels, with a declared budget of over €10 million a year.',
+  'The European Court of Auditors called the EU lobby register "not an enforceable legislative act" in 2024: there are no fines for lobbyists who skip it.'],
+ src:[['EU Transparency Register','https://transparency-register.europa.eu/index_en'],['LobbyFacts','https://www.lobbyfacts.eu'],['Transparency International EU: Who really has the EU’s ear? (2026)','https://transparency.eu/who-really-has-the-eus-ear-introducing-the-new-integrity-watch-eu-lobbyists-tool/'],['European Court of Auditors: Special Report 05/2024','https://www.eca.europa.eu/ECAHTML/SR-2024-05/en/body.html'],['Privacy International: lobbyists writing EU data law','https://privacyinternational.org/press-release/1470/amazon-and-ebay-lobbyists-found-be-writing-eu-data-protection-law-copy-paste']]};

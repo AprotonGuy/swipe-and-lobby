@@ -4,7 +4,7 @@ const OVERRIDES={
   "ask": "\"Approve a new coffee machine for the office, {name}. The old one makes coffee that tastes like death.\""
  },
  "tip:practiceDone": {
-  "text": "See? The bars moved, just a little. That was practice. Here's your diary for today: the real lobbyists. Open the door when you're ready. I can smell their cheap perfume from here"
+  "text": "See? The bars moved, just a little. That was practice. Here's your agenda for today: the real lobbyists. Open the door when you're ready. I can smell their cheap perfume from here"
  },
  "tip:card2": {
   "text": "Drag the card a little. See the dots on the bars up top? Red means down, green means up. Too high or too low and people get very mad. Trust me, I know."
