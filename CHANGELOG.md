@@ -1,4 +1,37 @@
-# Swipe & Lobby — changelog
+# Lobby Tactics (voorheen Swipe & Lobby) — changelog
+
+## v0.7 (12 oktober 2026): Lobby Tactics
+
+**Het spel is helemaal nieuw: Swipe & Lobby wordt Lobby Tactics, een roguelike deckbuilder.**
+
+**Zo speel je**
+- Je bent Eurocommissaris en kiest uit drie commissarissen, elk met eigen startkaarten en een eigen eigenschap: The Free Market Hawk, The Green Warrior en The Iron Bureaucrat.
+- Je reist over een kaart van Brussel met dossiers, zware lobbyisten 💀, de back room 💶, pauzes bij Gerard ☕, ❓-events en aan het eind de eindbaas A.R.T.H.U.R.
+- Elk dossier is een echte EU-wet. Je kiest zelf of je hem doordrukt of tegenhoudt. Je commissaris bepaalt welke beloning bij welke kant hoort.
+- Elk gevecht is touwtrekken over één onderwerp, zoals Natuur of Privacy. Swipe tactiekkaarten omhoog naar de lobbyist om te trekken, blok hun trek met een schild, en raak hun zwakte voor dubbele trek.
+- 🎖️ Reputatie is je leven: verloren dossiers, vuile kaarten en trucjes van lobbyisten kosten reputatie. Bij 0 lig je eruit.
+
+**Lobbyisten en trucs**
+- Lobbyisten tonen vooraf hun volgende zet. Ze kunnen je reputatie raken, je een beurt laten overslaan, kaarten verstoppen of dinerkaarten in je deck stoppen.
+- Bij doordrukken vecht je tegen vakbonden, consumentenbonden, milieugroepen, burgerrechtengroepen of burgerinitiatieven, elk met een eigen zwakte.
+- A.R.T.H.U.R. maakt nepkaarten, verspreidt nepnieuws en updatet zichzelf naar versie 2.0.
+- 📰 Media-aandacht: vuile kaarten en lobbycadeaus worden opgemerkt. Hoe hoger, hoe lastiger, tot een kaart "in jail" gaat.
+- De Compromise-kaart: houd het touw twee beurten in de compromis-zone voor een eigen beloning.
+
+**Items, events en verhaal**
+- Items voor de hele run, schoon of met een addertje.
+- 9 ❓-events: Fat Cat met een cadeautas, Quizy Tingel, de Duivel, de vergeten kamer, Margriet uit het archief, het lobbyritueel, vast in de lift, de Straatsburg-pendel en de klokkenluider.
+- Een intro in je kantoor op de 13e verdieping, en een oefengevecht tegen Gerard voor nieuwe spelers.
+- Terugkerende spelers kiezen bij de start een item van Gerard.
+- De reality check staat bij de keuze: je ziet vooraf wat Brussel echt deed.
+
+**Moeilijkheid**
+- Lobbyisten passen zich aan je deck aan, trekken harder naarmate een gevecht duurt, en het spel wordt iets makkelijker of moeilijker na 2 verloren of gewonnen potjes op rij.
+- Beginners zijn beschermd tegen te veel reputatieverlies in hun eerste potjes.
+
+**Geluid en beeld**
+- Muziek die meebeweegt met het touwtrekken, een eigen deuntje per personage en de lobby lounge-melodie op de kaart.
+- Werkt op telefoon (staand en liggend) en op de pc.
 
 ## v0.6 demo (9 oktober 2026)
 

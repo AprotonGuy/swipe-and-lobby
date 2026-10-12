@@ -1,9 +1,9 @@
 {
- "name": "Swipe & Lobby",
- "short_name": "Swipe & Lobby",
+ "name": "Lobby Tactics",
+ "short_name": "Lobby Tactics",
  "start_url": "./",
  "display": "standalone",
- "orientation": "portrait",
+ "orientation": "any",
  "background_color": "#2a1f27",
  "theme_color": "#2a1f27",
  "icons": [
